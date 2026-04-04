@@ -441,6 +441,19 @@ public class UserController {
     }
     
     /**
+     * 设置学生抽奖次数
+     */
+    @PostMapping("/setLotteryCount")
+    @ResponseBody
+    public String setLotteryCount(@RequestParam Long studentId, @RequestParam int lotteryCount, HttpSession session) {
+        User user = userService.getById(studentId);
+        if (user == null) return "fail";
+        user.setLotteryCount(lotteryCount);
+        userService.updateUser(user);
+        return "success";
+    }
+
+    /**
      * 根据二维码获取学生信息（用于二维码预览页面）
      */
     @GetMapping("/getStudentByQrCode")

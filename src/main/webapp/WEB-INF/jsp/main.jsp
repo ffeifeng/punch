@@ -329,6 +329,14 @@
                         <a href="javascript:void(0)" class="menu-item" onclick="openTab('积分管理','/points_manage')">
                             💎 积分管理
                         </a>
+                        <% if ("admin".equals(role) || "parent".equals(role)) { %>
+                        <a href="javascript:void(0)" class="menu-item" onclick="openTab('抽奖管理','/lottery_manage')">
+                            🎰 抽奖管理
+                        </a>
+                        <a href="javascript:void(0)" class="menu-item" onclick="openTab('抽奖记录','/lottery_record')">
+                            🏆 抽奖记录
+                        </a>
+                        <% } %>
                         <% if ("admin".equals(role)) { %>
                         <a href="javascript:void(0)" class="menu-item" onclick="openTab('操作日志','/operation_log')">
                             📋 操作日志

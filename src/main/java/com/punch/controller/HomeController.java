@@ -66,8 +66,22 @@ public class HomeController {
     public String operationLog(HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null || !"admin".equals(user.getUsername())) {
-            return "redirect:/main"; // 非admin用户重定向到主页
+            return "redirect:/main";
         }
         return "operation_log";
+    }
+
+    @GetMapping("/lottery_manage")
+    public String lotteryManage(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+        return "lottery_manage";
+    }
+
+    @GetMapping("/lottery_record")
+    public String lotteryRecord(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+        return "lottery_record";
     }
 }

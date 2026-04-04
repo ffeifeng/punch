@@ -18,6 +18,7 @@ public class User {
     private Long parentId;
     private Integer totalPoints;
     private String qrCode;  // 学生二维码标识
+    private Integer lotteryCount;  // 剩余抽奖次数
     private Long createBy;
     private Date createTime;
     private Long updateBy;

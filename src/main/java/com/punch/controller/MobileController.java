@@ -4,6 +4,10 @@ import com.punch.entity.User;
 import com.punch.service.UserService;
 import com.punch.service.CheckinItemService;
 import com.punch.service.PointsRecordService;
+import com.punch.service.LotteryItemService;
+import com.punch.service.LotteryRecordService;
+import com.punch.entity.LotteryItem;
+import com.punch.entity.LotteryRecord;
 import com.punch.util.QrCodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,6 +33,12 @@ public class MobileController {
     
     @Autowired
     private PointsRecordService pointsRecordService;
+
+    @Autowired
+    private LotteryItemService lotteryItemService;
+
+    @Autowired
+    private LotteryRecordService lotteryRecordService;
     
     /**
      * 移动端登录页面
@@ -151,5 +161,123 @@ public class MobileController {
     @ResponseBody
     public User getCurrentUser(HttpSession session) {
         return (User) session.getAttribute("user");
+    }
+
+    /**
+     * 获取可用的抽奖项（学生端）
+     */
+    @GetMapping("/lotteryItems")
+    @ResponseBody
+    public Map<String, Object> getLotteryItems(HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User user = (User) session.getAttribute("user");
+        if (user == null) { result.put("success", false); return result; }
+
+        // 通过学生找到家长
+        User student = userService.getById(user.getId());
+        if (student == null || student.getParentId() == null) {
+            result.put("success", false); result.put("message", "无效用户"); return result;
+        }
+        java.util.List<LotteryItem> items = lotteryItemService.getEnabledByParentId(student.getParentId());
+        result.put("success", true);
+        result.put("items", items);
+        result.put("lotteryCount", student.getLotteryCount() != null ? student.getLotteryCount() : 0);
+        return result;
+    }
+
+    /**
+     * 执行抽奖（学生端）
+     */
+    @PostMapping("/doLottery")
+    @ResponseBody
+    public Map<String, Object> doLottery(HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User user = (User) session.getAttribute("user");
+        if (user == null) { result.put("success", false); result.put("message", "未登录"); return result; }
+
+        User student = userService.getById(user.getId());
+        if (student == null || student.getParentId() == null) {
+            result.put("success", false); result.put("message", "无效用户"); return result;
+        }
+
+        int remaining = student.getLotteryCount() != null ? student.getLotteryCount() : 0;
+        if (remaining <= 0) {
+            result.put("success", false);
+            result.put("message", "抽奖次数已用完，请联系家长补充次数 😢");
+            result.put("remainingCount", 0);
+            result.put("errorType", "NO_COUNT");
+            return result;
+        }
+
+        java.util.List<LotteryItem> items = lotteryItemService.getEnabledByParentId(student.getParentId());
+        if (items == null || items.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "奖品列表已变更，请刷新页面重试 🔄");
+            result.put("remainingCount", remaining);
+            result.put("errorType", "NO_ITEMS");
+            return result;
+        }
+
+        // 按概率加权随机抽取
+        LotteryItem won = weightedRandom(items);
+        if (won == null) {
+            result.put("success", false);
+            result.put("message", "抽奖失败，请稍后再试");
+            result.put("remainingCount", remaining);
+            result.put("errorType", "DRAW_FAIL");
+            return result;
+        }
+
+        // 扣减抽奖次数
+        student.setLotteryCount(remaining - 1);
+        userService.updateUser(student);
+        // 更新session
+        session.setAttribute("user", userService.getById(student.getId()));
+
+        // 创建抽奖记录
+        LotteryRecord record = new LotteryRecord();
+        record.setStudentId(student.getId());
+        record.setItemId(won.getId());
+        record.setItemName(won.getName());
+        lotteryRecordService.create(record);
+
+        result.put("success", true);
+        result.put("prize", won.getName());
+        result.put("remainingCount", remaining - 1);
+        return result;
+    }
+
+    /**
+     * 我的抽奖记录（学生端）
+     */
+    @GetMapping("/myLotteryRecords")
+    @ResponseBody
+    public Map<String, Object> myLotteryRecords(HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User user = (User) session.getAttribute("user");
+        if (user == null) { result.put("success", false); return result; }
+        java.util.List<LotteryRecord> records = lotteryRecordService.getByStudentId(user.getId());
+        result.put("success", true);
+        result.put("records", records);
+        return result;
+    }
+
+    /**
+     * 按概率加权随机抽取奖品
+     */
+    private LotteryItem weightedRandom(java.util.List<LotteryItem> items) {
+        double total = items.stream()
+                .mapToDouble(i -> i.getProbability() != null ? i.getProbability().doubleValue() : 0)
+                .sum();
+        if (total <= 0) {
+            return items.get((int)(Math.random() * items.size()));
+        }
+        double rand = Math.random() * total;
+        double cumulative = 0;
+        for (LotteryItem item : items) {
+            cumulative += item.getProbability() != null ? item.getProbability().doubleValue() : 0;
+            if (rand <= cumulative) return item;
+        }
+        return items.get(items.size() - 1);
     }
 }

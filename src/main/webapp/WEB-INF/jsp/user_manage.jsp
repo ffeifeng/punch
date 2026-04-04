@@ -40,7 +40,8 @@
             <th data-options="field:'authCode',width:80">注册码</th>
             <th data-options="field:'status',width:60,formatter:formatStatus">状态</th>
             <th data-options="field:'registerTime',width:120">注册时间</th>
-            <th data-options="field:'operation',width:180,formatter:formatOp">操作</th>
+            <th data-options="field:'lotteryCount',width:80,formatter:formatLotteryCount">抽奖次数</th>
+            <th data-options="field:'operation',width:200,formatter:formatOp">操作</th>
         </tr>
         </thead>
     </table>
@@ -187,6 +188,30 @@ function doSearch() {
         endTime: $('#search_end').datebox('getValue')
     });
 }
+function formatLotteryCount(val, row) {
+    if (row.parentId == null) return '<span style="color:#ccc;">-</span>';
+    var count = val || 0;
+    var color = count > 0 ? '#319795' : '#a0aec0';
+    return '<span style="color:' + color + ';font-weight:bold;">🎰 ' + count + ' 次</span>';
+}
+function setLotteryCount(studentId, current) {
+    $.messager.prompt('设置抽奖次数', '请输入要赋予该孩子的抽奖次数（当前：' + current + '次）：', function(val) {
+        if (val === null || val === undefined) return;
+        var count = parseInt(val);
+        if (isNaN(count) || count < 0) {
+            $.messager.alert('提示', '请输入有效的非负整数', 'warning');
+            return;
+        }
+        $.post('/user/setLotteryCount', { studentId: studentId, lotteryCount: count }, function(res) {
+            if (res === 'success') {
+                $.messager.show({ title: '成功', msg: '抽奖次数已设置为 ' + count + ' 次', showType: 'slide', timeout: 2000 });
+                $('#userTable').datagrid('reload');
+            } else {
+                $.messager.alert('错误', '设置失败', 'error');
+            }
+        });
+    });
+}
 function formatStatus(val) {
     if(val==1) return '<span style="color:green">启用</span>';
     if(val==0) return '<span style="color:red">禁用</span>';
@@ -223,6 +248,7 @@ function formatOp(val,row) {
         // 如果是学生用户，添加二维码管理功能
         if (row.parentId != null) {
             ops += ' <a href="javascript:void(0)" onclick="showQrCode('+row.id+')">二维码</a>';
+            ops += ' <a href="javascript:void(0)" onclick="setLotteryCount('+row.id+','+(row.lotteryCount||0)+')" style="color:#319795;">🎰抽奖次数</a>';
         }
     }
     

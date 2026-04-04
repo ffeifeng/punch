@@ -95,24 +95,21 @@
         
         /* 自定义确认对话框样式 */
         .custom-dialog-overlay {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
         }
         
         .custom-dialog-overlay.show {
-            opacity: 1;
-            visibility: visible;
+            display: flex;
+            animation: modalFadeIn 0.25s ease;
         }
         
         .custom-dialog {
@@ -123,12 +120,7 @@
             max-width: 350px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
-        }
-        
-        .custom-dialog-overlay.show .custom-dialog {
-            transform: scale(1);
+            animation: cardSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
         .dialog-title {
@@ -215,6 +207,44 @@
             font-size: 2rem;
             font-weight: bold;
         }
+        
+        .points-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .points-action-btn {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .points-action-btn:active { transform: scale(0.96); }
+        .points-action-btn .btn-icon { font-size: 1.3rem; }
+        .points-action-btn.lottery {
+            background: rgba(255,255,255,0.22);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.35);
+        }
+        .points-action-btn.lottery:hover { background: rgba(255,255,255,0.32); }
+        .points-action-btn.lottery.disabled-btn {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .points-action-btn.records {
+            background: rgba(255,255,255,0.18);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .points-action-btn.records:hover { background: rgba(255,255,255,0.28); }
         
         .checkin-container {
             background: white;
@@ -456,6 +486,240 @@
             border-radius: 8px;
             margin-bottom: 15px;
         }
+
+        /* 抽奖区域 - 弹窗样式 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            align-items: center;
+            justify-content: center;
+            z-index: 15000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-overlay.show {
+            display: flex;
+            animation: modalFadeIn 0.25s ease;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 360px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 24px 20px 20px;
+            animation: cardSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes cardSlideIn {
+            from { transform: scale(0.85) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        .modal-close {
+            background: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            width: 32px; height: 32px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: #4a5568;
+            transition: background 0.2s;
+        }
+        .modal-close:hover { background: #e2e8f0; }
+
+        .lottery-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .wheel-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .wheel-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 24px solid #e53e3e;
+            z-index: 10;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        #wheelCanvas {
+            border-radius: 50%;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            display: block;
+        }
+
+        .lottery-spin-btn {
+            margin-top: 18px;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(253, 160, 133, 0.4);
+            transition: all 0.3s;
+        }
+        .lottery-spin-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(253, 160, 133, 0.5);
+        }
+        .lottery-spin-btn:disabled {
+            background: #e2e8f0;
+            color: #a0aec0;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .lottery-count-info {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        /* 页面上的入口按钮 */
+
+
+        /* 抽奖记录列表 */
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .record-item:last-child { border-bottom: none; }
+        .record-prize {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1rem;
+        }
+        .record-time { color: #718096; font-size: 12px; margin-top: 3px; }
+        .record-status-redeemed {
+            background: #c6f6d5; color: #276749;
+            padding: 4px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 600; white-space: nowrap;
+        }
+        .record-status-pending {
+            background: #feebc8; color: #7b341e;
+            padding: 4px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 600; white-space: nowrap;
+        }
+
+        .record-item:last-child { border-bottom: none; }
+
+        .record-prize {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1rem;
+        }
+
+        .record-time {
+            color: #718096;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .record-status-redeemed {
+            background: #c6f6d5;
+            color: #276749;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .record-status-pending {
+            background: #feebc8;
+            color: #7b341e;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .prize-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 20000;
+        }
+        .prize-overlay.show {
+            display: flex;
+            animation: modalFadeIn 0.25s ease;
+        }
+        .prize-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 300px;
+            width: 85%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: cardSlideIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .prize-emoji { font-size: 4rem; margin-bottom: 10px; }
+        .prize-label { font-size: 1rem; color: #718096; margin-bottom: 8px; }
+        .prize-name { font-size: 1.6rem; font-weight: 800; color: #2d3748; margin-bottom: 20px; }
+        .prize-close-btn {
+            background: linear-gradient(135deg, #4fd1c5, #38b2ac);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -475,6 +739,17 @@
         <div class="points-display">
             <div class="points-label">我的总积分</div>
             <div class="points-value" id="totalPoints"><%= totalPoints != null ? totalPoints : 0 %></div>
+            <div class="points-actions" id="quickActions" style="display:none;">
+                <button class="points-action-btn lottery" id="lotteryEntryBtn" onclick="openLotteryModal()">
+                    <span class="btn-icon">🎰</span>
+                    <span>幸运转盘</span>
+                    <span style="font-size:0.72rem;opacity:0.85;" id="lotteryCountBadge">剩余 0 次</span>
+                </button>
+                <button class="points-action-btn records" onclick="openRecordsModal()">
+                    <span class="btn-icon">🏆</span>
+                    <span>我的奖品</span>
+                </button>
+            </div>
         </div>
     </div>
     
@@ -490,7 +765,7 @@
         </div>
         
         <div class="refresh-hint">
-            💡 点击右上角 🔄 按钮可刷新最新的积分和打卡项信息
+            💡 点击右上角 🔄 按钮可刷新最新的积分、打卡项及抽奖信息
         </div>
         
         <div class="loading" id="loading">
@@ -502,10 +777,10 @@
             <!-- 打卡事项将通过JavaScript动态加载 -->
         </div>
     </div>
+
     
     <!-- 自定义确认对话框 -->
-    <div id="customDialog" class="custom-dialog-overlay">
-        <div class="custom-dialog">
+    <div id="customDialog" class="custom-dialog-overlay">        <div class="custom-dialog">
             <div id="dialogTitle" class="dialog-title"></div>
             <div id="dialogMessage" class="dialog-message"></div>
             <div class="dialog-buttons">
@@ -515,14 +790,52 @@
         </div>
     </div>
 
+    <!-- 抽奖转盘弹窗 -->
+    <div class="modal-overlay" id="lotteryModal" onclick="closeLotteryModal(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">🎰 幸运转盘</div>
+                <button class="modal-close" onclick="closeLotteryModal()">✕</button>
+            </div>
+            <div class="wheel-container">
+                <div class="wheel-wrapper">
+                    <div class="wheel-pointer"></div>
+                    <canvas id="wheelCanvas" width="280" height="280"></canvas>
+                </div>
+            </div>
+            <div class="lottery-count-info">剩余抽奖次数：<strong id="lotteryCountDisplay">0</strong> 次</div>
+            <button class="lottery-spin-btn" id="lotteryBtn" onclick="doLottery()">🎉 点击抽奖</button>
+        </div>
+    </div>
+
+    <!-- 我的抽奖记录弹窗 -->
+    <div class="modal-overlay" id="recordsModal" onclick="closeRecordsModal(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">🏆 我的奖品记录</div>
+                <button class="modal-close" onclick="closeRecordsModal()">✕</button>
+            </div>
+            <div id="lotteryRecordList">
+                <div style="text-align:center;padding:30px;color:#718096;">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 抽奖结果弹窗 -->
+    <div class="prize-overlay" id="prizeOverlay">
+        <div class="prize-card">
+            <div class="prize-emoji">🎁</div>
+            <div class="prize-label">恭喜你抽到了</div>
+            <div class="prize-name" id="prizeName"></div>
+            <button class="prize-close-btn" onclick="closePrizeOverlay()">太棒了！</button>
+        </div>
+    </div>
+
     <script>
         let studentId = <%= student.getId() %>;
         
-        // 页面加载完成后获取打卡事项
-        window.addEventListener('load', function() {
-            updateDateInfo();
-            loadCheckinItems();
-        });
+        // 页面加载完成后获取打卡事项（由下方统一处理）
+        // window.addEventListener('load', ...) 已移至文件底部统一调用
         
         // 更新日期信息
         function updateDateInfo() {
@@ -866,11 +1179,12 @@
             // 显示刷新提示
             showMessage('正在刷新数据...', 'info');
             
-            // 同时更新日期、积分和打卡事项
+            // 同时更新日期、积分、打卡事项和抽奖数据
             Promise.all([
                 updateDateInfo(),
                 updateTotalPoints(),
-                loadCheckinItems()
+                loadCheckinItems(),
+                loadLotteryData()
             ]).then(() => {
                 showMessage('数据刷新成功！✨', 'success');
             }).catch(error => {
@@ -985,6 +1299,285 @@
         
         // 移除自动刷新功能，改为手动操作后局部更新
         // 如果需要刷新数据，用户可以下拉刷新或重新进入页面
+
+        // ==================== 抽奖转盘功能 ====================
+        var lotteryItems = [];
+        var lotteryCount = 0;
+        var wheelSpinning = false;
+        var currentAngle = 0;
+        var wheelDrawn = false;
+
+        var WHEEL_COLORS = ['#4fd1c5','#f6d365','#fda085','#a29bfe','#fd79a8','#00b894','#fdcb6e','#e17055','#74b9ff','#55efc4'];
+
+        function loadLotteryData() {
+            return fetch('/mobile/lotteryItems')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success && data.items && data.items.length > 0) {
+                        lotteryItems = data.items;
+                        lotteryCount = data.lotteryCount || 0;
+                        updateLotteryUI();
+                        document.getElementById('quickActions').style.display = 'flex';
+                    } else {
+                        // 抽奖项被全部删除/禁用，或次数为0：重置状态，隐藏入口
+                        lotteryItems = [];
+                        lotteryCount = data.lotteryCount || 0;
+                        updateLotteryUI();
+                        if (lotteryItems.length === 0) {
+                            document.getElementById('quickActions').style.display = 'none';
+                        }
+                    }
+                })
+                .catch(function(e) { console.log('抽奖数据加载失败:', e); });
+        }
+
+        function updateLotteryUI() {
+            document.getElementById('lotteryCountDisplay').textContent = lotteryCount;
+            document.getElementById('lotteryBtn').disabled = lotteryCount <= 0;
+            document.getElementById('lotteryCountBadge').textContent = '剩余 ' + lotteryCount + ' 次';
+            var entryBtn = document.getElementById('lotteryEntryBtn');
+            if (lotteryCount <= 0) {
+                entryBtn.classList.add('disabled-btn');
+                entryBtn.classList.remove('lottery');
+            } else {
+                entryBtn.classList.remove('disabled-btn');
+                entryBtn.classList.add('lottery');
+            }
+        }
+
+        function openLotteryModal() {
+            document.getElementById('lotteryModal').classList.add('show');
+            // 弹窗打开后绘制转盘
+            setTimeout(function() { drawWheel(currentAngle); }, 50);
+        }
+
+        function closeLotteryModal(e) {
+            if (e && e.target !== document.getElementById('lotteryModal')) return;
+            document.getElementById('lotteryModal').classList.remove('show');
+        }
+
+        function openRecordsModal() {
+            document.getElementById('recordsModal').classList.add('show');
+            loadMyLotteryRecords();
+        }
+
+        function closeRecordsModal(e) {
+            if (e && e.target !== document.getElementById('recordsModal')) return;
+            document.getElementById('recordsModal').classList.remove('show');
+        }
+
+        function drawWheel(rotationAngle) {
+            var canvas = document.getElementById('wheelCanvas');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            var items = lotteryItems;
+            if (!items || items.length === 0) return;
+
+            var cx = canvas.width / 2;
+            var cy = canvas.height / 2;
+            var radius = cx - 5;
+            var sliceAngle = (2 * Math.PI) / items.length;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制外圈装饰
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius + 4, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#4fd1c5';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            items.forEach(function(item, i) {
+                var startAngle = rotationAngle + i * sliceAngle;
+                var endAngle = startAngle + sliceAngle;
+
+                // 绘制扇形
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // 绘制文字
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(startAngle + sliceAngle / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 13px -apple-system, sans-serif';
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowBlur = 3;
+                var text = item.name.length > 6 ? item.name.substring(0, 6) + '..' : item.name;
+                ctx.fillText(text, radius - 12, 5);
+                ctx.restore();
+            });
+
+            // 中心圆
+            ctx.beginPath();
+            ctx.arc(cx, cy, 28, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.strokeStyle = '#4fd1c5';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.fillStyle = '#2d3748';
+            ctx.font = 'bold 12px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('抽奖', cx, cy);
+        }
+
+        function doLottery() {
+            if (wheelSpinning) return;
+            if (lotteryCount <= 0) {
+                showMessage('抽奖次数已用完 😢', 'error');
+                return;
+            }
+            if (lotteryItems.length === 0) {
+                showMessage('暂无可用奖品', 'error');
+                return;
+            }
+
+            wheelSpinning = true;
+            document.getElementById('lotteryBtn').disabled = true;
+
+            fetch('/mobile/doLottery', { method: 'POST' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        var prize = data.prize;
+                        var remaining = data.remainingCount;
+
+                        // 找到中奖奖品的索引
+                        var prizeIndex = lotteryItems.findIndex(function(i) { return i.name === prize; });
+                        if (prizeIndex < 0) {
+                            // 本地奖品列表与后端不一致（后台已修改），先停止转动
+                            wheelSpinning = false;
+                            lotteryCount = remaining;
+                            showMessage('🔄 奖品列表已更新，正在刷新...', 'info');
+                            // 自动重载抽奖数据，重载后再提示中奖
+                            loadLotteryData().then(function() {
+                                showMessage('🎉 恭喜获得：' + prize + '！请重新查看转盘', 'success');
+                                document.getElementById('lotteryBtn').disabled = lotteryCount <= 0;
+                            });
+                            return;
+                        }
+
+                        // 计算目标角度：让对应扇形转到顶部指针处
+                        var sliceAngle = (2 * Math.PI) / lotteryItems.length;
+                        var targetSliceCenter = prizeIndex * sliceAngle + sliceAngle / 2;
+                        // 转盘需要旋转使 targetSliceCenter 到达 -π/2（顶部）
+                        var targetAngle = -Math.PI / 2 - targetSliceCenter;
+                        // 加上几圈旋转增加动画效果
+                        var totalRotation = currentAngle + (5 * 2 * Math.PI) + (targetAngle - (currentAngle % (2 * Math.PI)));
+
+                        spinWheel(totalRotation, prize, remaining);
+                    } else {
+                        // 同步后端返回的最新次数
+                        if (typeof data.remainingCount !== 'undefined') {
+                            lotteryCount = data.remainingCount;
+                            updateLotteryUI();
+                        }
+                        showMessage(data.message || '抽奖失败，请重试', 'error');
+                        wheelSpinning = false;
+                        document.getElementById('lotteryBtn').disabled = lotteryCount <= 0;
+                        // 奖品列表变更时自动重载
+                        if (data.errorType === 'NO_ITEMS') {
+                            setTimeout(function() { loadLotteryData(); }, 1500);
+                        }
+                    }
+                })
+                .catch(function(e) {
+                    showMessage('网络错误，请检查连接后重试', 'error');
+                    wheelSpinning = false;
+                    document.getElementById('lotteryBtn').disabled = false;
+                });
+        }
+
+        function spinWheel(targetAngle, prize, remaining) {
+            var startAngle = currentAngle;
+            var duration = 3500;
+            var startTime = null;
+
+            function easeOut(t) {
+                return 1 - Math.pow(1 - t, 4);
+            }
+
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+                var elapsed = timestamp - startTime;
+                var progress = Math.min(elapsed / duration, 1);
+                var easedProgress = easeOut(progress);
+
+                currentAngle = startAngle + (targetAngle - startAngle) * easedProgress;
+                drawWheel(currentAngle);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    currentAngle = targetAngle;
+                    wheelSpinning = false;
+                    lotteryCount = remaining;
+                    updateLotteryUI();
+                    // 显示结果
+                    setTimeout(function() { showPrize(prize); }, 200);
+                    // 刷新记录（静默）
+                    loadMyLotteryRecords();
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function showPrize(prize) {
+            document.getElementById('prizeName').textContent = prize;
+            document.getElementById('prizeOverlay').classList.add('show');
+        }
+
+        function closePrizeOverlay() {
+            document.getElementById('prizeOverlay').classList.remove('show');
+        }
+
+        function loadMyLotteryRecords() {
+            fetch('/mobile/myLotteryRecords')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        renderLotteryRecords(data.records || []);
+                    }
+                })
+                .catch(function(e) { console.log('记录加载失败', e); });
+        }
+
+        function renderLotteryRecords(records) {
+            var container = document.getElementById('lotteryRecordList');
+            if (!records || records.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#718096;">暂无抽奖记录</div>';
+                return;
+            }
+            var html = '';
+            records.forEach(function(r) {
+                var timeStr = r.lotteryTime ? new Date(r.lotteryTime).toLocaleDateString('zh-CN', {month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'}) : '';
+                var statusHtml = r.isRedeemed === 1
+                    ? '<span class="record-status-redeemed">✅ 已兑换</span>'
+                    : '<span class="record-status-pending">⏳ 未兑换</span>';
+                html += '<div class="record-item">'
+                    + '<div><div class="record-prize">🎁 ' + r.itemName + '</div><div class="record-time">' + timeStr + '</div></div>'
+                    + statusHtml
+                    + '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        // 在页面加载时同时加载抽奖数据
+        window.addEventListener('load', function() {
+            updateDateInfo();
+            loadCheckinItems();
+            loadLotteryData();
+        });
     </script>
 </body>
 </html>

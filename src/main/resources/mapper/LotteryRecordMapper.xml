@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.LotteryRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.punch.entity.LotteryRecord">
+        <id property="id" column="id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="itemId" column="item_id"/>
+        <result property="itemName" column="item_name"/>
+        <result property="lotteryTime" column="lottery_time"/>
+        <result property="isRedeemed" column="is_redeemed"/>
+        <result property="redeemedTime" column="redeemed_time"/>
+        <result property="redeemedBy" column="redeemed_by"/>
+    </resultMap>
+
+    <resultMap id="DTOResultMap" type="com.punch.dto.LotteryRecordDTO">
+        <id property="id" column="id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="studentName" column="student_name"/>
+        <result property="itemId" column="item_id"/>
+        <result property="itemName" column="item_name"/>
+        <result property="lotteryTime" column="lottery_time"/>
+        <result property="isRedeemed" column="is_redeemed"/>
+        <result property="redeemedTime" column="redeemed_time"/>
+        <result property="redeemedByName" column="redeemed_by_name"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM lottery_record WHERE id = #{id}
+    </select>
+
+    <select id="selectByStudentId" resultMap="BaseResultMap">
+        SELECT * FROM lottery_record WHERE student_id = #{studentId} ORDER BY lottery_time DESC
+    </select>
+
+    <select id="selectByParentId" resultMap="DTOResultMap">
+        SELECT lr.id, lr.student_id,
+               s.real_name AS student_name,
+               lr.item_id, lr.item_name,
+               lr.lottery_time, lr.is_redeemed,
+               lr.redeemed_time,
+               op.real_name AS redeemed_by_name
+        FROM lottery_record lr
+        LEFT JOIN user s ON lr.student_id = s.id
+        LEFT JOIN user op ON lr.redeemed_by = op.id
+        WHERE s.parent_id = #{parentId}
+        <if test="studentId != null">
+            AND lr.student_id = #{studentId}
+        </if>
+        <if test="isRedeemed != null">
+            AND lr.is_redeemed = #{isRedeemed}
+        </if>
+        ORDER BY lr.lottery_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.punch.entity.LotteryRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO lottery_record (student_id, item_id, item_name, lottery_time, is_redeemed)
+        VALUES (#{studentId}, #{itemId}, #{itemName}, #{lotteryTime}, #{isRedeemed})
+    </insert>
+
+    <update id="update" parameterType="com.punch.entity.LotteryRecord">
+        UPDATE lottery_record
+        <set>
+            <if test="isRedeemed != null">is_redeemed = #{isRedeemed},</if>
+            <if test="redeemedTime != null">redeemed_time = #{redeemedTime},</if>
+            <if test="redeemedBy != null">redeemed_by = #{redeemedBy},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>
