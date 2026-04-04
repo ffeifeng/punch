@@ -1,0 +1,66 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /
+    jsp:
+      init-parameters:
+        development: false
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 10
+    # 支持反向代理的配置
+    remote-ip-header: x-forwarded-for
+    protocol-header: x-forwarded-proto
+    use-relative-redirects: true
+
+spring:
+  profiles:
+    active: local  # 默认使用本地环境配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      # 连接池配置
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+      # 自动提交
+      auto-commit: true
+      # 连接初始化SQL
+      connection-init-sql: SELECT 1
+      # 验证超时
+      validation-timeout: 5000
+      # 泄漏检测阈值
+      leak-detection-threshold: 60000
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+  web:
+    resources:
+      static-locations: classpath:/static/,classpath:/META-INF/resources/,classpath:/resources/,classpath:/public/
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.punch.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    # 临时启用SQL日志输出用于调试
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 打卡系统配置
+punch:
+  # 每日打卡事项刷新时间配置
+  daily-refresh:
+    # 刷新时间，格式：HH:mm:ss（24小时制）
+    time: "06:00:00"
+    # 是否启用定时刷新
+    enabled: true
+    # 时区
+    timezone: "Asia/Shanghai"

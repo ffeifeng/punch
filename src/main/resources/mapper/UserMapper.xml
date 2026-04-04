@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.UserMapper">
+    <resultMap id="BaseResultMap" type="com.punch.entity.User">
+        <id property="id" column="id" />
+        <result property="username" column="username" />
+        <result property="password" column="password" />
+        <result property="realName" column="real_name" />
+        <result property="phone" column="phone" />
+        <result property="email" column="email" />
+        <result property="status" column="status" />
+        <result property="authCode" column="auth_code" />
+        <result property="registerTime" column="register_time" />
+        <result property="lastLoginTime" column="last_login_time" />
+        <result property="parentId" column="parent_id" />
+        <result property="totalPoints" column="total_points" />
+        <result property="qrCode" column="qr_code" />
+        <result property="createBy" column="create_by" />
+        <result property="createTime" column="create_time" />
+        <result property="updateBy" column="update_by" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE username = #{username}
+    </select>
+    <select id="selectByAuthCode" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE auth_code = #{authCode}
+    </select>
+    
+    <select id="selectByQrCode" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE qr_code = #{qrCode}
+    </select>
+    <insert id="insert" parameterType="com.punch.entity.User">
+        INSERT INTO user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="username != null">username,</if>
+            <if test="password != null">password,</if>
+            <if test="realName != null">real_name,</if>
+            <if test="phone != null">phone,</if>
+            <if test="email != null">email,</if>
+            <if test="status != null">status,</if>
+            <if test="authCode != null">auth_code,</if>
+            <if test="registerTime != null">register_time,</if>
+            <if test="lastLoginTime != null">last_login_time,</if>
+            <if test="parentId != null">parent_id,</if>
+            <if test="totalPoints != null">total_points,</if>
+            <if test="qrCode != null">qr_code,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="username != null">#{username},</if>
+            <if test="password != null">#{password},</if>
+            <if test="realName != null">#{realName},</if>
+            <if test="phone != null">#{phone},</if>
+            <if test="email != null">#{email},</if>
+            <if test="status != null">#{status},</if>
+            <if test="authCode != null">#{authCode},</if>
+            <if test="registerTime != null">#{registerTime},</if>
+            <if test="lastLoginTime != null">#{lastLoginTime},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="totalPoints != null">#{totalPoints},</if>
+            <if test="qrCode != null">#{qrCode},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+    <update id="update" parameterType="com.punch.entity.User">
+        UPDATE user
+        <set>
+            <if test="username != null">username=#{username},</if>
+            <if test="password != null">password=#{password},</if>
+            <if test="realName != null">real_name=#{realName},</if>
+            <if test="phone != null">phone=#{phone},</if>
+            <if test="email != null">email=#{email},</if>
+            <if test="status != null">status=#{status},</if>
+            <if test="authCode != null">auth_code=#{authCode},</if>
+            <if test="registerTime != null">register_time=#{registerTime},</if>
+            <if test="lastLoginTime != null">last_login_time=#{lastLoginTime},</if>
+            <if test="parentId != null">parent_id=#{parentId},</if>
+            <if test="totalPoints != null">total_points=#{totalPoints},</if>
+            <if test="qrCode != null">qr_code=#{qrCode},</if>
+            <if test="createBy != null">create_by=#{createBy},</if>
+            <if test="createTime != null">create_time=#{createTime},</if>
+            <if test="updateBy != null">update_by=#{updateBy},</if>
+            <if test="updateTime != null">update_time=#{updateTime},</if>
+        </set>
+        WHERE id=#{id}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM user WHERE id = #{id}
+    </delete>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM user
+    </select>
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT * FROM user
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT(#{username}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                AND register_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND register_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY register_time DESC
+    </select>
+    <select id="selectParentUsers" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE parent_id IS NULL AND status = 1 AND username NOT LIKE 'TEMP_%' AND real_name != '待注册家长' ORDER BY real_name
+    </select>
+    <select id="selectStudentUsers" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE parent_id IS NOT NULL AND status = 1 ORDER BY real_name
+    </select>
+    <select id="selectByParentIdAndCondition" resultMap="BaseResultMap">
+        SELECT * FROM user
+        <where>
+            parent_id = #{parentId}
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                AND register_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND register_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY register_time DESC
+    </select>
+    
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE parent_id = #{parentId} ORDER BY register_time DESC
+    </select>
+</mapper>

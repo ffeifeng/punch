@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.RoleMapper">
+    <resultMap id="BaseResultMap" type="com.punch.entity.Role">
+        <id property="id" column="id" />
+        <result property="roleName" column="role_name" />
+        <result property="roleCode" column="role_code" />
+        <result property="description" column="description" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM role WHERE id = #{id}
+    </select>
+    <select id="selectByCode" resultMap="BaseResultMap">
+        SELECT * FROM role WHERE role_code = #{roleCode}
+    </select>
+    <insert id="insert" parameterType="com.punch.entity.Role">
+        INSERT INTO role (role_name, role_code, description, create_time, update_time)
+        VALUES (#{roleName}, #{roleCode}, #{description}, #{createTime}, #{updateTime})
+    </insert>
+    <update id="update" parameterType="com.punch.entity.Role">
+        UPDATE role
+        SET role_name=#{roleName}, role_code=#{roleCode}, description=#{description}, create_time=#{createTime}, update_time=#{updateTime}
+        WHERE id=#{id}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM role WHERE id = #{id}
+    </delete>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM role
+    </select>
+</mapper>

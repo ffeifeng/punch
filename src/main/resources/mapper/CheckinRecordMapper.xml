@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.CheckinRecordMapper">
+    <resultMap id="BaseResultMap" type="com.punch.entity.CheckinRecord">
+        <id property="id" column="id" />
+        <result property="studentId" column="student_id" />
+        <result property="itemId" column="item_id" />
+        <result property="checkinDate" column="checkin_date" />
+        <result property="status" column="status" />
+        <result property="checkinTime" column="checkin_time" />
+        <result property="cancelTime" column="cancel_time" />
+        <result property="createBy" column="create_by" />
+        <result property="createTime" column="create_time" />
+        <result property="updateBy" column="update_by" />
+        <result property="updateTime" column="update_time" />
+        <result property="remark" column="remark" />
+    </resultMap>
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM checkin_record WHERE id = #{id}
+    </select>
+    <select id="selectByStudentId" resultMap="BaseResultMap">
+        SELECT * FROM checkin_record WHERE student_id = #{studentId}
+    </select>
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT * FROM checkin_record
+        <where>
+            <if test="studentId != null">AND student_id = #{studentId}</if>
+            <if test="itemId != null">AND item_id = #{itemId}</if>
+            <if test="date != null">AND DATE(checkin_date) = DATE(#{date})</if>
+            <if test="status != null">AND status = #{status}</if>
+        </where>
+        ORDER BY checkin_date DESC, item_id ASC
+    </select>
+    <insert id="insert" parameterType="com.punch.entity.CheckinRecord">
+        INSERT INTO checkin_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="studentId != null">student_id,</if>
+            <if test="itemId != null">item_id,</if>
+            <if test="checkinDate != null">checkin_date,</if>
+            <if test="status != null">status,</if>
+            <if test="checkinTime != null">checkin_time,</if>
+            <if test="cancelTime != null">cancel_time,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="studentId != null">#{studentId},</if>
+            <if test="itemId != null">#{itemId},</if>
+            <if test="checkinDate != null">#{checkinDate},</if>
+            <if test="status != null">#{status},</if>
+            <if test="checkinTime != null">#{checkinTime},</if>
+            <if test="cancelTime != null">#{cancelTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+    <update id="update" parameterType="com.punch.entity.CheckinRecord">
+        UPDATE checkin_record
+        <set>
+            <if test="studentId != null">student_id=#{studentId},</if>
+            <if test="itemId != null">item_id=#{itemId},</if>
+            <if test="checkinDate != null">checkin_date=#{checkinDate},</if>
+            <if test="status != null">status=#{status},</if>
+            <if test="checkinTime != null">checkin_time=#{checkinTime},</if>
+            <if test="cancelTime != null">cancel_time=#{cancelTime},</if>
+            <if test="createBy != null">create_by=#{createBy},</if>
+            <if test="createTime != null">create_time=#{createTime},</if>
+            <if test="updateBy != null">update_by=#{updateBy},</if>
+            <if test="updateTime != null">update_time=#{updateTime},</if>
+            <if test="remark != null">remark=#{remark},</if>
+        </set>
+        WHERE id=#{id}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM checkin_record WHERE id = #{id}
+    </delete>
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT cr.* FROM checkin_record cr
+        INNER JOIN user u ON cr.student_id = u.id
+        <where>
+            u.parent_id = #{parentId}
+            <if test="itemId != null">
+                AND cr.item_id = #{itemId}
+            </if>
+            <if test="date != null">
+                AND DATE(cr.checkin_date) = DATE(#{date})
+            </if>
+            <if test="status != null">
+                AND cr.status = #{status}
+            </if>
+        </where>
+        ORDER BY cr.checkin_date DESC, cr.checkin_time DESC
+    </select>
+</mapper>

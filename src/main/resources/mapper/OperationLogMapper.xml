@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.OperationLogMapper">
+    <resultMap id="BaseResultMap" type="com.punch.entity.OperationLog">
+        <id property="id" column="id" />
+        <result property="userId" column="user_id" />
+        <result property="operation" column="operation" />
+        <result property="targetId" column="target_id" />
+        <result property="targetType" column="target_type" />
+        <result property="content" column="content" />
+        <result property="ip" column="ip" />
+        <result property="createTime" column="create_time" />
+    </resultMap>
+    <insert id="insert" parameterType="com.punch.entity.OperationLog">
+        INSERT INTO operation_log (user_id, operation, target_id, target_type, content, ip, create_time)
+        VALUES (#{userId}, #{operation}, #{targetId}, #{targetType}, #{content}, #{ip}, #{createTime})
+    </insert>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM operation_log ORDER BY create_time DESC
+    </select>
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM operation_log WHERE user_id = #{userId} ORDER BY create_time DESC
+    </select>
+    
+    <resultMap id="DTOResultMap" type="com.punch.dto.OperationLogDTO">
+        <id property="id" column="id" />
+        <result property="userId" column="user_id" />
+        <result property="operation" column="operation" />
+        <result property="targetId" column="target_id" />
+        <result property="targetType" column="target_type" />
+        <result property="content" column="content" />
+        <result property="ip" column="ip" />
+        <result property="createTime" column="create_time" />
+        <result property="userName" column="user_name" />
+    </resultMap>
+    
+    <select id="selectByCondition" resultMap="DTOResultMap">
+        SELECT ol.*, u.real_name as user_name 
+        FROM operation_log ol
+        LEFT JOIN user u ON ol.user_id = u.id
+        <where>
+            <if test="userName != null and userName != ''">
+                AND u.real_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+            <if test="operation != null and operation != ''">
+                AND ol.operation LIKE CONCAT('%', #{operation}, '%')
+            </if>
+            <if test="content != null and content != ''">
+                AND ol.content LIKE CONCAT('%', #{content}, '%')
+            </if>
+            <if test="ip != null and ip != ''">
+                AND ol.ip LIKE CONCAT('%', #{ip}, '%')
+            </if>
+        </where>
+        ORDER BY ol.create_time DESC
+    </select>
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.TemplateStudentMapper">
+    
+    <resultMap id="BaseResultMap" type="com.punch.entity.TemplateStudent">
+        <id property="id" column="id" />
+        <result property="templateId" column="template_id" />
+        <result property="studentId" column="student_id" />
+        <result property="createBy" column="create_by" />
+        <result property="createTime" column="create_time" />
+    </resultMap>
+    
+    <insert id="insert" parameterType="com.punch.entity.TemplateStudent">
+        INSERT INTO checkin_template_student 
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="templateId != null">template_id,</if>
+            <if test="studentId != null">student_id,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        VALUES 
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="templateId != null">#{templateId},</if>
+            <if test="studentId != null">#{studentId},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+    
+    <delete id="deleteByTemplateId">
+        DELETE FROM checkin_template_student WHERE template_id = #{templateId}
+    </delete>
+    
+    <delete id="deleteByStudentId">
+        DELETE FROM checkin_template_student WHERE student_id = #{studentId}
+    </delete>
+    
+    <delete id="deleteByTemplateIdAndStudentId">
+        DELETE FROM checkin_template_student WHERE template_id = #{templateId} AND student_id = #{studentId}
+    </delete>
+    
+    <select id="selectByTemplateId" resultMap="BaseResultMap">
+        SELECT * FROM checkin_template_student WHERE template_id = #{templateId}
+    </select>
+    
+    <select id="selectByStudentId" resultMap="BaseResultMap">
+        SELECT * FROM checkin_template_student WHERE student_id = #{studentId}
+    </select>
+    
+    <select id="selectStudentIdsByTemplateId" resultType="Long">
+        SELECT student_id FROM checkin_template_student WHERE template_id = #{templateId}
+    </select>
+    
+    <select id="selectTemplateIdsByStudentId" resultType="Long">
+        SELECT template_id FROM checkin_template_student WHERE student_id = #{studentId}
+    </select>
+    
+    <select id="selectByTemplateIdAndStudentId" resultMap="BaseResultMap">
+        SELECT * FROM checkin_template_student WHERE template_id = #{templateId} AND student_id = #{studentId}
+    </select>
+    
+</mapper>

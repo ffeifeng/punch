@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.DailyCheckinItemMapper">
+    
+    <resultMap id="BaseResultMap" type="com.punch.entity.DailyCheckinItem">
+        <id column="id" property="id" />
+        <result column="student_id" property="studentId" />
+        <result column="item_id" property="itemId" />
+        <result column="checkin_date" property="checkinDate" />
+        <result column="status" property="status" />
+        <result column="points" property="points" />
+        <result column="checkin_time" property="checkinTime" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    
+    <resultMap id="DetailResultMap" type="com.punch.entity.DailyCheckinItem" extends="BaseResultMap">
+        <result column="item_name" property="itemName" />
+        <result column="item_description" property="itemDescription" />
+        <result column="item_points" property="itemPoints" />
+        <result column="sort_order" property="sortOrder" />
+        <result column="template_id" property="templateId" />
+        <result column="checkin_start_time" property="checkinStartTime" />
+        <result column="checkin_end_time" property="checkinEndTime" />
+        <result column="student_name" property="studentName" />
+    </resultMap>
+    
+    <insert id="insert" parameterType="com.punch.entity.DailyCheckinItem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO daily_checkin_items (
+            student_id, item_id, checkin_date, status, points, checkin_time, create_time, update_time
+        ) VALUES (
+            #{studentId}, #{itemId}, #{checkinDate}, #{status}, #{points}, #{checkinTime}, NOW(), NOW()
+        )
+    </insert>
+    
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO daily_checkin_items (
+            student_id, item_id, checkin_date, status, points, checkin_time, create_time, update_time
+        ) VALUES
+        <foreach collection="items" item="item" separator=",">
+            (#{item.studentId}, #{item.itemId}, #{item.checkinDate}, #{item.status}, #{item.points}, #{item.checkinTime}, NOW(), NOW())
+        </foreach>
+    </insert>
+    
+    <update id="update" parameterType="com.punch.entity.DailyCheckinItem">
+        UPDATE daily_checkin_items
+        <set>
+            <if test="checkinDate != null">checkin_date = #{checkinDate},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="points != null">points = #{points},</if>
+            checkin_time = #{checkinTime},
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM daily_checkin_items WHERE id = #{id}
+    </select>
+    
+    <select id="selectByStudentAndDate" resultMap="BaseResultMap">
+        SELECT * FROM daily_checkin_items 
+        WHERE student_id = #{studentId} AND checkin_date = DATE(#{checkinDate})
+        ORDER BY item_id
+    </select>
+    
+    <select id="selectByStudentId" resultMap="BaseResultMap">
+        SELECT * FROM daily_checkin_items 
+        WHERE student_id = #{studentId}
+        ORDER BY checkin_date DESC, item_id
+    </select>
+    
+    <select id="selectByStudentAndDateWithDetails" resultMap="DetailResultMap">
+        SELECT 
+            dci.*,
+            ci.item_name,
+            ci.description as item_description,
+            ci.points as item_points,
+            ci.sort_order,
+            ci.template_id,
+            ci.checkin_start_time,
+            ci.checkin_end_time,
+            u.real_name as student_name
+        FROM daily_checkin_items dci
+        LEFT JOIN checkin_item ci ON dci.item_id = ci.id
+        LEFT JOIN user u ON dci.student_id = u.id
+        WHERE dci.student_id = #{studentId} AND dci.checkin_date = DATE(#{checkinDate})
+        ORDER BY ci.sort_order, dci.item_id
+    </select>
+    
+    <select id="selectByDate" resultMap="BaseResultMap">
+        SELECT * FROM daily_checkin_items 
+        WHERE checkin_date = DATE(#{checkinDate})
+        ORDER BY student_id, item_id
+    </select>
+    
+    <delete id="deleteByDate">
+        DELETE FROM daily_checkin_items WHERE checkin_date = DATE(#{checkinDate})
+    </delete>
+    
+    <delete id="deleteByStudentAndDate">
+        DELETE FROM daily_checkin_items 
+        WHERE student_id = #{studentId} AND checkin_date = DATE(#{checkinDate})
+    </delete>
+    
+    <select id="countByStudentItemAndDate" resultType="int">
+        SELECT COUNT(*) FROM daily_checkin_items 
+        WHERE student_id = #{studentId} AND item_id = #{itemId} AND checkin_date = DATE(#{checkinDate})
+    </select>
+    
+    <update id="updateExpiredStatus">
+        UPDATE daily_checkin_items 
+        SET status = 2, update_time = NOW()
+        WHERE checkin_date &lt; #{checkinDate} AND status = 0
+    </update>
+    
+    <!-- 根据模板ID和日期删除排期记录 -->
+    <delete id="deleteByTemplateAndDate">
+        DELETE dci FROM daily_checkin_items dci
+        INNER JOIN checkin_item ci ON dci.item_id = ci.id
+        WHERE ci.template_id = #{templateId} AND dci.checkin_date = DATE(#{checkinDate})
+    </delete>
+    
+    <!-- 重置所有排期数据到指定日期 -->
+    <update id="resetScheduleToDate">
+        UPDATE daily_checkin_items dci1
+        LEFT JOIN (
+            SELECT student_id, item_id 
+            FROM daily_checkin_items 
+            WHERE checkin_date = #{checkinDate}
+        ) dci2 ON dci1.student_id = dci2.student_id AND dci1.item_id = dci2.item_id
+        SET dci1.checkin_date = #{checkinDate}, 
+            dci1.status = 0, 
+            dci1.checkin_time = NULL,
+            dci1.update_time = NOW()
+        WHERE dci1.checkin_date != #{checkinDate}
+        AND dci2.student_id IS NULL
+    </update>
+    
+    <!-- 重置指定学生的排期数据到指定日期 -->
+    <update id="resetStudentScheduleToDate">
+        UPDATE daily_checkin_items dci1
+        LEFT JOIN (
+            SELECT item_id 
+            FROM daily_checkin_items 
+            WHERE student_id = #{studentId} AND checkin_date = #{checkinDate}
+        ) dci2 ON dci1.item_id = dci2.item_id
+        SET dci1.checkin_date = #{checkinDate}, 
+            dci1.status = 0, 
+            dci1.checkin_time = NULL,
+            dci1.update_time = NOW()
+        WHERE dci1.student_id = #{studentId} AND dci1.checkin_date != #{checkinDate}
+        AND dci2.item_id IS NULL
+    </update>
+    
+    <!-- 根据学生ID和事项ID查询排期记录 -->
+    <select id="selectByStudentAndItem" resultMap="BaseResultMap">
+        SELECT * FROM daily_checkin_items 
+        WHERE student_id = #{studentId} AND item_id = #{itemId}
+        ORDER BY checkin_date DESC
+    </select>
+    
+    <!-- 根据ID删除记录 -->
+    <delete id="deleteById">
+        DELETE FROM daily_checkin_items WHERE id = #{id}
+    </delete>
+    
+    <!-- 查询每日打卡事项列表（带学生信息和搜索条件） -->
+    <select id="selectDailyItemsWithDetails" resultType="com.punch.dto.DailyCheckinItemDTO">
+        SELECT 
+            dci.id,
+            dci.student_id AS studentId,
+            dci.item_id AS itemId,
+            dci.checkin_date AS checkinDate,
+            dci.status,
+            dci.points,
+            dci.checkin_time AS checkinTime,
+            dci.create_time AS createTime,
+            dci.update_time AS updateTime,
+            u.real_name AS studentName,
+            ct.template_name AS templateName,
+            ci.item_name AS itemName,
+            ci.description AS itemDescription,
+            ci.checkin_start_time AS itemCheckinStartTime,
+            ci.checkin_end_time AS itemCheckinEndTime
+        FROM daily_checkin_items dci
+        LEFT JOIN user u ON dci.student_id = u.id
+        LEFT JOIN checkin_item ci ON dci.item_id = ci.id
+        LEFT JOIN checkin_template ct ON ci.template_id = ct.id
+        <where>
+            <if test="checkinDate != null">
+                AND dci.checkin_date = DATE(#{checkinDate})
+            </if>
+            <if test="studentName != null and studentName != ''">
+                AND u.real_name LIKE CONCAT('%', #{studentName}, '%')
+            </if>
+            <if test="templateName != null and templateName != ''">
+                AND ct.template_name LIKE CONCAT('%', #{templateName}, '%')
+            </if>
+            <if test="status != null">
+                AND dci.status = #{status}
+            </if>
+            <if test="parentId != null">
+                AND u.parent_id = #{parentId}
+            </if>
+        </where>
+        ORDER BY dci.checkin_date DESC, u.real_name ASC, ct.template_name ASC, ci.sort_order ASC
+    </select>
+    
+</mapper>
