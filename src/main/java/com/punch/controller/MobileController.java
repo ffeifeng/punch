@@ -6,6 +6,7 @@ import com.punch.service.CheckinItemService;
 import com.punch.service.PointsRecordService;
 import com.punch.service.LotteryItemService;
 import com.punch.service.LotteryRecordService;
+import com.punch.service.SystemConfigService;
 import com.punch.entity.LotteryItem;
 import com.punch.entity.LotteryRecord;
 import com.punch.util.QrCodeUtils;
@@ -39,6 +40,9 @@ public class MobileController {
 
     @Autowired
     private LotteryRecordService lotteryRecordService;
+
+    @Autowired
+    private SystemConfigService systemConfigService;
     
     /**
      * 移动端登录页面
@@ -164,6 +168,21 @@ public class MobileController {
     }
 
     /**
+     * 实时获取当前学生积分余额（从数据库查，不走session缓存）
+     */
+    @GetMapping("/currentPoints")
+    @ResponseBody
+    public Map<String, Object> getCurrentPoints(HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User user = (User) session.getAttribute("user");
+        if (user == null) { result.put("success", false); return result; }
+        int balance = pointsRecordService.getCurrentBalance(user.getId());
+        result.put("success", true);
+        result.put("totalPoints", balance);
+        return result;
+    }
+
+    /**
      * 获取可用的抽奖项（学生端）
      */
     @GetMapping("/lotteryItems")
@@ -248,17 +267,96 @@ public class MobileController {
     }
 
     /**
-     * 我的抽奖记录（学生端）
+     * 我的抽奖记录（学生端，支持按兑换状态过滤）
      */
     @GetMapping("/myLotteryRecords")
     @ResponseBody
-    public Map<String, Object> myLotteryRecords(HttpSession session) {
+    public Map<String, Object> myLotteryRecords(
+            @RequestParam(required = false) Integer isRedeemed,
+            HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         User user = (User) session.getAttribute("user");
         if (user == null) { result.put("success", false); return result; }
-        java.util.List<LotteryRecord> records = lotteryRecordService.getByStudentId(user.getId());
+        java.util.List<LotteryRecord> records = isRedeemed != null
+                ? lotteryRecordService.getByStudentIdAndStatus(user.getId(), isRedeemed)
+                : lotteryRecordService.getByStudentId(user.getId());
         result.put("success", true);
         result.put("records", records);
+        return result;
+    }
+
+    /**
+     * 获取当前积分兑换配置（学生端）
+     */
+    @GetMapping("/exchangeConfig")
+    @ResponseBody
+    public Map<String, Object> getExchangeConfig(HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User user = (User) session.getAttribute("user");
+        if (user == null) { result.put("success", false); return result; }
+
+        User student = userService.getById(user.getId());
+        if (student == null || student.getParentId() == null) {
+            result.put("success", false); return result;
+        }
+        int currentPoints = pointsRecordService.getCurrentBalance(student.getId());
+        int ratio = systemConfigService.getPointsToLotteryRatio(student.getParentId());
+        result.put("success", true);
+        result.put("ratio", ratio);
+        result.put("currentPoints", currentPoints);
+        result.put("enabled", ratio > 0);
+        // 当前积分最多能兑换几次
+        result.put("maxExchangeable", ratio > 0 ? currentPoints / ratio : 0);
+        return result;
+    }
+
+    /**
+     * 积分兑换抽奖次数（学生端）
+     */
+    @PostMapping("/exchangePoints")
+    @ResponseBody
+    public Map<String, Object> exchangePoints(@RequestParam int times, HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User user = (User) session.getAttribute("user");
+        if (user == null) { result.put("success", false); result.put("message", "未登录"); return result; }
+
+        if (times <= 0) { result.put("success", false); result.put("message", "兑换次数必须大于0"); return result; }
+
+        User student = userService.getById(user.getId());
+        if (student == null || student.getParentId() == null) {
+            result.put("success", false); result.put("message", "无效用户"); return result;
+        }
+
+        int ratio = systemConfigService.getPointsToLotteryRatio(student.getParentId());
+        if (ratio <= 0) {
+            result.put("success", false); result.put("message", "积分兑换功能未开启"); return result;
+        }
+
+        int currentPoints = pointsRecordService.getCurrentBalance(student.getId());
+        int needed = ratio * times;
+        if (currentPoints < needed) {
+            result.put("success", false);
+            result.put("message", "积分不足！需要 " + needed + " 积分，当前仅有 " + currentPoints + " 积分");
+            return result;
+        }
+
+        // 扣除积分
+        pointsRecordService.reducePoints(student.getId(), needed, 3, student.getId(),
+                "积分兑换抽奖 " + times + " 次（每次 " + ratio + " 积分）", null);
+
+        // 增加抽奖次数
+        int newLotteryCount = (student.getLotteryCount() != null ? student.getLotteryCount() : 0) + times;
+        student.setLotteryCount(newLotteryCount);
+        userService.updateUser(student);
+
+        // 更新 session
+        session.setAttribute("user", userService.getById(student.getId()));
+
+        int newPoints = pointsRecordService.getCurrentBalance(student.getId());
+        result.put("success", true);
+        result.put("message", "兑换成功！消耗 " + needed + " 积分，获得 " + times + " 次抽奖机会");
+        result.put("lotteryCount", newLotteryCount);
+        result.put("remainingPoints", newPoints);
         return result;
     }
 

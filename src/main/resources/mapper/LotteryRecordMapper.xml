@@ -33,6 +33,12 @@
         SELECT * FROM lottery_record WHERE student_id = #{studentId} ORDER BY lottery_time DESC
     </select>
 
+    <select id="selectByStudentIdAndStatus" resultMap="BaseResultMap">
+        SELECT * FROM lottery_record
+        WHERE student_id = #{studentId} AND is_redeemed = #{isRedeemed}
+        ORDER BY lottery_time DESC
+    </select>
+
     <select id="selectByParentId" resultMap="DTOResultMap">
         SELECT lr.id, lr.student_id,
                s.real_name AS student_name,

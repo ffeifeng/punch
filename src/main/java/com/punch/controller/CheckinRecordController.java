@@ -2,8 +2,15 @@ package com.punch.controller;
 
 
 import com.punch.dto.CheckinRecordDTO;
+import com.punch.entity.CheckinCompleteReward;
+import com.punch.entity.CheckinTemplate;
+import com.punch.entity.DailyCheckinItem;
 import com.punch.entity.User;
+import com.punch.mapper.CheckinCompleteRewardMapper;
+import com.punch.mapper.CheckinTemplateMapper;
+import com.punch.mapper.DailyCheckinItemMapper;
 import com.punch.service.CheckinRecordService;
+import com.punch.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -11,14 +18,21 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Controller
 @RequestMapping("/checkinRecord")
 public class CheckinRecordController {
     @Autowired
     private CheckinRecordService recordService;
+    @Autowired
+    private DailyCheckinItemMapper dailyCheckinItemMapper;
+    @Autowired
+    private CheckinTemplateMapper checkinTemplateMapper;
+    @Autowired
+    private CheckinCompleteRewardMapper checkinCompleteRewardMapper;
+    @Autowired
+    private UserService userService;
 
     // 查询打卡记录（按角色）
     @GetMapping("/list")
@@ -55,26 +69,88 @@ public class CheckinRecordController {
     // 学生打卡
     @PostMapping("/doCheckin")
     @ResponseBody
-    public String doCheckin(@RequestParam Long itemId, 
-                           @RequestParam(required = false) Long studentId, 
-                           HttpSession session, 
-                           HttpServletRequest request) {
+    public Map<String, Object> doCheckin(@RequestParam Long itemId,
+                                         @RequestParam(required = false) Long studentId,
+                                         HttpSession session,
+                                         HttpServletRequest request) {
+        Map<String, Object> resp = new HashMap<>();
         User user = (User) session.getAttribute("user");
-        if (user == null) return "no_permission";
-        
+        if (user == null) { resp.put("result", "no_permission"); return resp; }
+
         Long targetStudentId;
-        // 学生只能给自己打卡
         if (user.getParentId() != null) {
             targetStudentId = user.getId();
-        } 
-        // admin可以给任何学生打卡，如果没指定学生ID则给自己打卡
-        else {
+        } else {
             targetStudentId = (studentId != null) ? studentId : user.getId();
         }
-        
+
         Date today = new Date();
         String clientIp = com.punch.util.IpUtils.getClientIpAddressWithLocalDetection(request);
-        return recordService.doCheckin(targetStudentId, itemId, today, user.getId(), clientIp);
+        String checkinResult = recordService.doCheckin(targetStudentId, itemId, today, user.getId(), clientIp);
+        resp.put("result", checkinResult);
+
+        // 打卡成功后检查是否全部完成，判断是否赠送抽奖次数
+        if ("success".equals(checkinResult)) {
+            tryGrantLotteryReward(targetStudentId, today, session, resp);
+        }
+        return resp;
+    }
+
+    /**
+     * 检查学生今日是否全部打卡完成，若是则赠送模板配置的抽奖次数（每日每模板只赠送一次）
+     */
+    private void tryGrantLotteryReward(Long studentId, Date today, HttpSession session, Map<String, Object> resp) {
+        try {
+            // 使用带详情的查询，确保能取到 templateId
+            List<DailyCheckinItem> items = dailyCheckinItemMapper.selectByStudentAndDateWithDetails(studentId, today);
+            if (items == null || items.isEmpty()) return;
+
+            // 全部完成条件：没有 status==0（待打卡）的事项，且至少有一项已完成（status==1）
+            boolean hasPending = items.stream().anyMatch(i -> Integer.valueOf(0).equals(i.getStatus()));
+            boolean hasCompleted = items.stream().anyMatch(i -> Integer.valueOf(1).equals(i.getStatus()));
+            if (hasPending || !hasCompleted) return;
+
+            // 取模板ID（同一学生今日事项属于同一模板）
+            Long templateId = items.stream()
+                    .map(DailyCheckinItem::getTemplateId)
+                    .filter(id -> id != null)
+                    .findFirst().orElse(null);
+            if (templateId == null) return;
+
+            // 检查今日是否已经赠送过
+            int alreadyRewarded = checkinCompleteRewardMapper.countByStudentTemplateDate(studentId, templateId, today);
+            if (alreadyRewarded > 0) return;
+
+            // 获取模板配置的奖励次数
+            CheckinTemplate template = checkinTemplateMapper.selectById(templateId);
+            if (template == null) return;
+            int reward = template.getLotteryReward() != null ? template.getLotteryReward() : 0;
+            if (reward <= 0) return;
+
+            // 赠送抽奖次数
+            User student = userService.getById(studentId);
+            if (student == null) return;
+            int newCount = (student.getLotteryCount() != null ? student.getLotteryCount() : 0) + reward;
+            student.setLotteryCount(newCount);
+            userService.updateUser(student);
+
+            // 记录奖励，防止重复发放
+            CheckinCompleteReward record = new CheckinCompleteReward();
+            record.setStudentId(studentId);
+            record.setTemplateId(templateId);
+            record.setRewardDate(today);
+            record.setLotteryCount(reward);
+            checkinCompleteRewardMapper.insert(record);
+
+            // 更新 session 中的用户信息
+            session.setAttribute("user", userService.getById(studentId));
+
+            resp.put("lotteryRewarded", true);
+            resp.put("lotteryRewardCount", reward);
+            resp.put("lotteryCount", newCount);
+        } catch (Exception e) {
+            // 奖励失败不影响打卡结果
+        }
     }
 
     // 撤销打卡

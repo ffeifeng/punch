@@ -26,6 +26,11 @@ public class LotteryRecordServiceImpl implements LotteryRecordService {
     }
 
     @Override
+    public List<LotteryRecord> getByStudentIdAndStatus(Long studentId, Integer isRedeemed) {
+        return lotteryRecordMapper.selectByStudentIdAndStatus(studentId, isRedeemed);
+    }
+
+    @Override
     public List<LotteryRecordDTO> getByParentId(Long parentId, Long studentId, Integer isRedeemed) {
         return lotteryRecordMapper.selectByParentId(parentId, studentId, isRedeemed);
     }

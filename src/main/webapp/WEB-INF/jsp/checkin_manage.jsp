@@ -176,6 +176,7 @@
                 <th data-options="field:'templateName',width:100">模板名称</th>
                 <th data-options="field:'description',width:120">描述</th>
                 <th data-options="field:'studentNames',width:150">分配学生</th>
+                <th data-options="field:'lotteryReward',width:80,align:'center'">完成赠抽奖次</th>
                 <th data-options="field:'status',width:60,formatter:formatTemplateStatus">状态</th>
                 <th data-options="field:'operation',width:120,formatter:formatTemplateOp">操作</th>
             </tr>
@@ -248,6 +249,14 @@
                 <option value="1">启用</option>
                 <option value="0">禁用</option>
             </select>
+        </div>
+        <div style="margin-bottom:20px;">
+            <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;font-size:0.9rem;">
+                🎰 全部打卡完成赠送抽奖次数
+            </label>
+            <input name="lotteryReward" type="number" min="0" max="99" value="0"
+                   style="width:100%;height:36px;padding:0 8px;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;">
+            <div style="font-size:0.78rem;color:#718096;margin-top:4px;">孩子完成当天全部打卡事项后，自动赠送指定次数的抽奖机会（每天仅赠送一次）</div>
         </div>
         <div style="margin-bottom:20px;">
             <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;font-size:0.9rem;">
@@ -516,18 +525,21 @@ function openEditTemplate(id) {
     var row = $('#templateTable').datagrid('getRows').find(r=>r.id==id);
     if(row){
         $('#fmTemplate').form('load', row);
-        
+
+        $('input[name="lotteryReward"]').val(row.lotteryReward || 0);
+        $('#dlgTemplate').dialog('open').dialog('setTitle','编辑模板');
+
         // 获取模板分配的学生并回显
         $.get('/checkin/template/' + id + '/students', function(studentIds) {
             $('#templateStudents').combobox('setValues', studentIds);
         });
-        
-        $('#dlgTemplate').dialog('open').dialog('setTitle','编辑模板');
     }
 }
 function saveTemplate() {
     var data = $('#fmTemplate').serializeArray().reduce(function(obj, item) { obj[item.name] = item.value; return obj; }, {});
-    
+
+    data.lotteryReward = parseInt($('input[name="lotteryReward"]').val()) || 0;
+
     // 获取选中的学生ID列表
     var studentIds = $('#templateStudents').combobox('getValues');
     if (!studentIds || studentIds.length === 0) {

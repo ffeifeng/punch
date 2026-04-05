@@ -10,6 +10,7 @@ public class CheckinTemplate {
     private String description;
     private Long parentId;
     private Integer status;
+    private Integer lotteryReward; // 全部打卡完成后赠送的抽奖次数
     private Long createBy;
     private Date createTime;
     private Long updateBy;

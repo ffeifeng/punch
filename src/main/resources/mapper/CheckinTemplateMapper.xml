@@ -7,6 +7,7 @@
         <result property="description" column="description" />
         <result property="parentId" column="parent_id" />
         <result property="status" column="status" />
+        <result property="lotteryReward" column="lottery_reward" />
         <result property="createBy" column="create_by" />
         <result property="createTime" column="create_time" />
         <result property="updateBy" column="update_by" />
@@ -25,6 +26,7 @@
             <if test="description != null">description,</if>
             <if test="parentId != null">parent_id,</if>
             <if test="status != null">status,</if>
+            <if test="lotteryReward != null">lottery_reward,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
             <if test="updateBy != null">update_by,</if>
@@ -36,6 +38,7 @@
             <if test="description != null">#{description},</if>
             <if test="parentId != null">#{parentId},</if>
             <if test="status != null">#{status},</if>
+            <if test="lotteryReward != null">#{lotteryReward},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="updateBy != null">#{updateBy},</if>
@@ -49,6 +52,7 @@
             <if test="description != null">description=#{description},</if>
             <if test="parentId != null">parent_id=#{parentId},</if>
             <if test="status != null">status=#{status},</if>
+            <if test="lotteryReward != null">lottery_reward=#{lotteryReward},</if>
             <if test="createBy != null">create_by=#{createBy},</if>
             <if test="createTime != null">create_time=#{createTime},</if>
             <if test="updateBy != null">update_by=#{updateBy},</if>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.SystemConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.punch.entity.SystemConfig">
+        <id property="id" column="id"/>
+        <result property="configKey" column="config_key"/>
+        <result property="configValue" column="config_value"/>
+        <result property="configName" column="config_name"/>
+        <result property="description" column="description"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 查询配置：优先取家长个性化配置，没有则取全局默认 -->
+    <select id="selectByKeyAndParent" resultMap="BaseResultMap">
+        SELECT * FROM system_config
+        WHERE config_key = #{configKey}
+          AND (parent_id = #{parentId} OR parent_id IS NULL)
+        ORDER BY parent_id DESC
+        LIMIT 1
+    </select>
+
+    <insert id="insertOrUpdate" parameterType="com.punch.entity.SystemConfig"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO system_config (config_key, config_value, config_name, description, parent_id, create_time, update_time)
+        VALUES (#{configKey}, #{configValue}, #{configName}, #{description}, #{parentId}, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+            config_value = VALUES(config_value),
+            config_name  = VALUES(config_name),
+            description  = VALUES(description),
+            update_time  = NOW()
+    </insert>
+
+    <update id="update" parameterType="com.punch.entity.SystemConfig">
+        UPDATE system_config
+        SET config_value = #{configValue}, update_time = NOW()
+        WHERE config_key = #{configKey}
+          AND (
+              (#{parentId} IS NOT NULL AND parent_id = #{parentId})
+              OR (#{parentId} IS NULL AND parent_id IS NULL)
+          )
+    </update>
+
+</mapper>

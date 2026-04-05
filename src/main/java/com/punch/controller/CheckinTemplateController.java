@@ -77,7 +77,19 @@ public class CheckinTemplateController {
         } else {
             template.setStatus(1); // 默认启用
         }
-        
+
+        // 转换lotteryReward字段
+        Object lotteryRewardObj = requestData.get("lotteryReward");
+        if (lotteryRewardObj instanceof String && !((String) lotteryRewardObj).isEmpty()) {
+            template.setLotteryReward(Integer.parseInt((String) lotteryRewardObj));
+        } else if (lotteryRewardObj instanceof Integer) {
+            template.setLotteryReward((Integer) lotteryRewardObj);
+        } else if (lotteryRewardObj instanceof Number) {
+            template.setLotteryReward(((Number) lotteryRewardObj).intValue());
+        } else {
+            template.setLotteryReward(0);
+        }
+
         // 家长只能添加自己模板
         if (user.getParentId() == null) {
             template.setParentId(user.getId());
@@ -126,9 +138,21 @@ public class CheckinTemplateController {
         } else if (statusObj instanceof Integer) {
             template.setStatus((Integer) statusObj);
         } else {
-            template.setStatus(1); // 默认启用
+            template.setStatus(1);
         }
-        
+
+        // 转换lotteryReward字段
+        Object lotteryRewardObj = requestData.get("lotteryReward");
+        if (lotteryRewardObj instanceof String && !((String) lotteryRewardObj).isEmpty()) {
+            template.setLotteryReward(Integer.parseInt((String) lotteryRewardObj));
+        } else if (lotteryRewardObj instanceof Integer) {
+            template.setLotteryReward((Integer) lotteryRewardObj);
+        } else if (lotteryRewardObj instanceof Number) {
+            template.setLotteryReward(((Number) lotteryRewardObj).intValue());
+        } else {
+            template.setLotteryReward(0);
+        }
+
         template.setUpdateBy(user.getId());
         template.setUpdateTime(new Date());
         

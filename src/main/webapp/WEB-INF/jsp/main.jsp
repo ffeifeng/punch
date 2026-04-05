@@ -336,6 +336,9 @@
                         <a href="javascript:void(0)" class="menu-item" onclick="openTab('抽奖记录','/lottery_record')">
                             🏆 抽奖记录
                         </a>
+                        <a href="javascript:void(0)" class="menu-item" onclick="openTab('配置管理','/config_manage')">
+                            ⚙️ 配置管理
+                        </a>
                         <% } %>
                         <% if ("admin".equals(role)) { %>
                         <a href="javascript:void(0)" class="menu-item" onclick="openTab('操作日志','/operation_log')">

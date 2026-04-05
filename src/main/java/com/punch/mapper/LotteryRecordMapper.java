@@ -10,6 +10,8 @@ import java.util.List;
 public interface LotteryRecordMapper {
     LotteryRecord selectById(@Param("id") Long id);
     List<LotteryRecord> selectByStudentId(@Param("studentId") Long studentId);
+    List<LotteryRecord> selectByStudentIdAndStatus(@Param("studentId") Long studentId,
+                                                    @Param("isRedeemed") Integer isRedeemed);
     List<LotteryRecordDTO> selectByParentId(@Param("parentId") Long parentId,
                                              @Param("studentId") Long studentId,
                                              @Param("isRedeemed") Integer isRedeemed);

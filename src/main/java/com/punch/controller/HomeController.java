@@ -84,4 +84,11 @@ public class HomeController {
         if (user == null) return "redirect:/login";
         return "lottery_record";
     }
+
+    @GetMapping("/config_manage")
+    public String configManage(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+        return "config_manage";
+    }
 }

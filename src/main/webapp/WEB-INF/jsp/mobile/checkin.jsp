@@ -514,7 +514,7 @@
             width: 100%;
             max-width: 360px;
             max-height: 90vh;
-            overflow-y: auto;
+            overflow: visible;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 24px 20px 20px;
             animation: cardSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -625,6 +625,37 @@
 
 
         /* 抽奖记录列表 */
+        .records-tabs {
+            display: flex;
+            border-bottom: 2px solid #edf2f7;
+            margin-bottom: 8px;
+        }
+        .records-tab {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            background: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #718096;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+        .records-tab.active {
+            color: #553c9a;
+            border-bottom-color: #667eea;
+        }
+        /* 记录列表固定高度，内容超出时滚动 */
+        #lotteryRecordList {
+            height: 300px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        #lotteryRecordList::-webkit-scrollbar { width: 4px; }
+        #lotteryRecordList::-webkit-scrollbar-track { background: #f7fafc; border-radius: 4px; }
+        #lotteryRecordList::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
         .record-item {
             display: flex;
             justify-content: space-between;
@@ -750,6 +781,16 @@
                     <span>我的奖品</span>
                 </button>
             </div>
+            <!-- 积分兑换按钮（有兑换配置才显示） -->
+            <div id="exchangeEntry" style="display:none;margin-top:10px;">
+                <button class="points-action-btn" id="exchangeEntryBtn"
+                        onclick="openExchangeModal()"
+                        style="width:100%;background:rgba(255,255,255,0.18);color:white;border:1px solid rgba(255,255,255,0.3);flex-direction:row;justify-content:center;gap:8px;padding:10px;">
+                    <span>💱</span>
+                    <span>积分兑换抽奖</span>
+                    <span id="exchangeRatioHint" style="font-size:0.75rem;opacity:0.8;"></span>
+                </button>
+            </div>
         </div>
     </div>
     
@@ -815,6 +856,11 @@
                 <div class="modal-title">🏆 我的奖品记录</div>
                 <button class="modal-close" onclick="closeRecordsModal()">✕</button>
             </div>
+            <!-- Tab 切换 -->
+            <div class="records-tabs">
+                <button class="records-tab active" id="tabPending" onclick="switchRecordsTab(0)">⏳ 未兑奖</button>
+                <button class="records-tab" id="tabRedeemed" onclick="switchRecordsTab(1)">✅ 已兑奖</button>
+            </div>
             <div id="lotteryRecordList">
                 <div style="text-align:center;padding:30px;color:#718096;">加载中...</div>
             </div>
@@ -828,6 +874,36 @@
             <div class="prize-label">恭喜你抽到了</div>
             <div class="prize-name" id="prizeName"></div>
             <button class="prize-close-btn" onclick="closePrizeOverlay()">太棒了！</button>
+        </div>
+    </div>
+
+    <!-- 积分兑换抽奖弹窗 -->
+    <div class="modal-overlay" id="exchangeModal" onclick="closeExchangeModal(event)">
+        <div class="modal-card" style="max-width:340px;">
+            <div class="modal-header">
+                <div class="modal-title">💱 积分兑换抽奖</div>
+                <button class="modal-close" onclick="closeExchangeModal()">✕</button>
+            </div>
+            <div style="padding:16px 0 8px;">
+                <div style="background:#f7fafc;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:0.9rem;color:#4a5568;line-height:1.7;">
+                    <div>🪙 当前积分：<strong id="exchangeCurrentPoints" style="color:#553c9a;">-</strong></div>
+                    <div>🎯 兑换比例：<strong id="exchangeRatioLabel" style="color:#553c9a;">-</strong></div>
+                    <div>🎰 最多可兑换：<strong id="exchangeMaxTimes" style="color:#553c9a;">-</strong> 次</div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <div style="font-size:0.85rem;font-weight:600;color:#4a5568;margin-bottom:8px;">兑换次数</div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <button onclick="adjustExchange(-1)" style="width:38px;height:38px;border-radius:50%;border:2px solid #667eea;background:white;color:#667eea;font-size:1.3rem;font-weight:bold;cursor:pointer;line-height:1;">−</button>
+                        <input type="number" id="exchangeTimes" value="1" min="1"
+                               style="flex:1;text-align:center;padding:8px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:1.1rem;font-weight:700;">
+                        <button onclick="adjustExchange(1)" style="width:38px;height:38px;border-radius:50%;border:2px solid #667eea;background:#667eea;color:white;font-size:1.3rem;font-weight:bold;cursor:pointer;line-height:1;">+</button>
+                    </div>
+                    <div id="exchangeCostHint" style="text-align:center;margin-top:8px;font-size:0.82rem;color:#718096;"></div>
+                </div>
+                <button class="lottery-spin-btn" id="exchangeConfirmBtn" onclick="doExchange()" style="margin-top:4px;">
+                    💱 确认兑换
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1089,12 +1165,22 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.text())
-            .then(result => {
+            .then(response => response.json())
+            .then(data => {
+                const result = data.result;
                 if (result === 'success') {
                     showMessage('打卡成功！🎉', 'success');
-                    updateItemStatus(itemId, 1); // 局部更新状态
-                    updateTotalPoints(); // 更新总积分
+                    updateItemStatus(itemId, 1);
+                    updateTotalPoints();
+                    // 全部打卡完成赠送抽奖次数
+                    if (data.lotteryRewarded) {
+                        lotteryCount = data.lotteryCount;
+                        updateLotteryUI();
+                        document.getElementById('quickActions').style.display = 'flex';
+                        setTimeout(function() {
+                            showMessage('🎰 全部打卡完成！获赠 ' + data.lotteryRewardCount + ' 次抽奖机会！', 'success');
+                        }, 1200);
+                    }
                 } else if (result === 'already_checked') {
                     showMessage('今日已打卡过此事项', 'info');
                 } else if (result === 'no_permission') {
@@ -1152,13 +1238,13 @@
             });
         }
         
-        // 更新总积分显示
+        // 更新总积分显示（从数据库实时查询，不依赖session缓存）
         function updateTotalPoints() {
-            return fetch('/user/currentUser')
+            return fetch('/mobile/currentPoints')
                 .then(response => response.json())
-                .then(user => {
-                    if (user && user.totalPoints !== undefined) {
-                        document.getElementById('totalPoints').textContent = user.totalPoints;
+                .then(data => {
+                    if (data.success && data.totalPoints !== undefined) {
+                        document.getElementById('totalPoints').textContent = data.totalPoints;
                     }
                 })
                 .catch(error => {
@@ -1184,7 +1270,8 @@
                 updateDateInfo(),
                 updateTotalPoints(),
                 loadCheckinItems(),
-                loadLotteryData()
+                loadLotteryData(),
+                loadExchangeConfig()
             ]).then(() => {
                 showMessage('数据刷新成功！✨', 'success');
             }).catch(error => {
@@ -1302,6 +1389,99 @@
 
         // ==================== 抽奖转盘功能 ====================
         var lotteryItems = [];
+
+        // ==================== 积分兑换功能 ====================
+        var exchangeRatio = 0;
+
+        function loadExchangeConfig() {
+            return fetch('/mobile/exchangeConfig')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success && data.enabled) {
+                        exchangeRatio = data.ratio;
+                        document.getElementById('exchangeRatioHint').textContent = data.ratio + '积分/次';
+                        document.getElementById('exchangeEntry').style.display = 'block';
+                    } else {
+                        document.getElementById('exchangeEntry').style.display = 'none';
+                    }
+                })
+                .catch(function() {});
+        }
+
+        function openExchangeModal() {
+            fetch('/mobile/exchangeConfig')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.success || !data.enabled) {
+                        showMessage('积分兑换功能未开启', 'info'); return;
+                    }
+                    exchangeRatio = data.ratio;
+                    document.getElementById('exchangeCurrentPoints').textContent = data.currentPoints + ' 积分';
+                    document.getElementById('exchangeRatioLabel').textContent = data.ratio + ' 积分 = 1 次抽奖';
+                    document.getElementById('exchangeMaxTimes').textContent = data.maxExchangeable;
+                    document.getElementById('exchangeTimes').value = 1;
+                    document.getElementById('exchangeTimes').max = data.maxExchangeable;
+                    updateExchangeCostHint();
+                    document.getElementById('exchangeModal').classList.add('show');
+                });
+        }
+
+        function closeExchangeModal(e) {
+            if (e && e.target !== document.getElementById('exchangeModal')) return;
+            document.getElementById('exchangeModal').classList.remove('show');
+        }
+
+        function adjustExchange(delta) {
+            var input = document.getElementById('exchangeTimes');
+            var max = parseInt(input.max) || 99;
+            var val = parseInt(input.value) || 1;
+            val = Math.max(1, Math.min(max, val + delta));
+            input.value = val;
+            updateExchangeCostHint();
+        }
+
+        document.addEventListener('input', function(e) {
+            if (e.target && e.target.id === 'exchangeTimes') updateExchangeCostHint();
+        });
+
+        function updateExchangeCostHint() {
+            var times = parseInt(document.getElementById('exchangeTimes').value) || 1;
+            var cost = times * exchangeRatio;
+            document.getElementById('exchangeCostHint').textContent =
+                '本次消耗 ' + cost + ' 积分，兑换 ' + times + ' 次抽奖机会';
+        }
+
+        function doExchange() {
+            var times = parseInt(document.getElementById('exchangeTimes').value);
+            if (!times || times <= 0) { showMessage('请输入有效的兑换次数', 'error'); return; }
+            var btn = document.getElementById('exchangeConfirmBtn');
+            btn.disabled = true;
+            fetch('/mobile/exchangePoints', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'times=' + times
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                btn.disabled = false;
+                if (data.success) {
+                    document.getElementById('exchangeModal').classList.remove('show');
+                    lotteryCount = data.lotteryCount;
+                    updateLotteryUI();
+                    document.getElementById('quickActions').style.display = 'flex';
+                    updateTotalPoints();
+                    // 更新兑换按钮提示
+                    loadExchangeConfig();
+                    showMessage('🎉 ' + data.message, 'success');
+                } else {
+                    showMessage('❌ ' + data.message, 'error');
+                }
+            })
+            .catch(function() {
+                btn.disabled = false;
+                showMessage('网络错误，请重试', 'error');
+            });
+        }
         var lotteryCount = 0;
         var wheelSpinning = false;
         var currentAngle = 0;
@@ -1358,8 +1538,23 @@
 
         function openRecordsModal() {
             document.getElementById('recordsModal').classList.add('show');
-            loadMyLotteryRecords();
+            // 默认显示未兑奖
+            currentRecordsTab = 0;
+            document.getElementById('tabPending').classList.add('active');
+            document.getElementById('tabRedeemed').classList.remove('active');
+            loadMyLotteryRecords(0);
         }
+
+        function switchRecordsTab(status) {
+            currentRecordsTab = status;
+            document.getElementById('tabPending').classList.toggle('active', status === 0);
+            document.getElementById('tabRedeemed').classList.toggle('active', status === 1);
+            document.getElementById('lotteryRecordList').innerHTML =
+                '<div style="text-align:center;padding:30px;color:#718096;">加载中...</div>';
+            loadMyLotteryRecords(status);
+        }
+
+        var currentRecordsTab = 0;
 
         function closeRecordsModal(e) {
             if (e && e.target !== document.getElementById('recordsModal')) return;
@@ -1525,8 +1720,8 @@
                     updateLotteryUI();
                     // 显示结果
                     setTimeout(function() { showPrize(prize); }, 200);
-                    // 刷新记录（静默）
-                    loadMyLotteryRecords();
+                    // 刷新记录（静默），按当前 tab 刷新
+                    loadMyLotteryRecords(currentRecordsTab);
                 }
             }
             requestAnimationFrame(animate);
@@ -1541,29 +1736,31 @@
             document.getElementById('prizeOverlay').classList.remove('show');
         }
 
-        function loadMyLotteryRecords() {
-            fetch('/mobile/myLotteryRecords')
+        function loadMyLotteryRecords(isRedeemed) {
+            var url = '/mobile/myLotteryRecords?isRedeemed=' + (isRedeemed !== undefined ? isRedeemed : currentRecordsTab);
+            fetch(url)
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     if (data.success) {
-                        renderLotteryRecords(data.records || []);
+                        renderLotteryRecords(data.records || [], isRedeemed !== undefined ? isRedeemed : currentRecordsTab);
                     }
                 })
                 .catch(function(e) { console.log('记录加载失败', e); });
         }
 
-        function renderLotteryRecords(records) {
+        function renderLotteryRecords(records, tabStatus) {
             var container = document.getElementById('lotteryRecordList');
+            var emptyText = tabStatus === 0 ? '暂无未兑奖记录 🎉' : '暂无已兑奖记录';
             if (!records || records.length === 0) {
-                container.innerHTML = '<div style="text-align:center;padding:20px;color:#718096;">暂无抽奖记录</div>';
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#718096;">' + emptyText + '</div>';
                 return;
             }
             var html = '';
             records.forEach(function(r) {
                 var timeStr = r.lotteryTime ? new Date(r.lotteryTime).toLocaleDateString('zh-CN', {month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'}) : '';
                 var statusHtml = r.isRedeemed === 1
-                    ? '<span class="record-status-redeemed">✅ 已兑换</span>'
-                    : '<span class="record-status-pending">⏳ 未兑换</span>';
+                    ? '<span class="record-status-redeemed">✅ 已兑奖</span>'
+                    : '<span class="record-status-pending">⏳ 待兑奖</span>';
                 html += '<div class="record-item">'
                     + '<div><div class="record-prize">🎁 ' + r.itemName + '</div><div class="record-time">' + timeStr + '</div></div>'
                     + statusHtml
@@ -1577,6 +1774,7 @@
             updateDateInfo();
             loadCheckinItems();
             loadLotteryData();
+            loadExchangeConfig();
         });
     </script>
 </body>
