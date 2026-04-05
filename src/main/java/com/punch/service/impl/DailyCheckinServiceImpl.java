@@ -73,6 +73,11 @@ public class DailyCheckinServiceImpl implements DailyCheckinService {
                     continue; // 跳过禁用的事项
                 }
                 
+                // 检查星期限制：当天不适用则跳过
+                if (!isItemApplicableForDate(item, date)) {
+                    continue;
+                }
+                
                 // 检查是否已存在
                 int existCount = dailyCheckinItemMapper.countByStudentItemAndDate(studentId, item.getId(), date);
                 if (existCount > 0) {
@@ -153,10 +158,11 @@ public class DailyCheckinServiceImpl implements DailyCheckinService {
             // 1. 获取该模板关联的所有学生
             List<Long> studentIds = templateStudentMapper.selectStudentIdsByTemplateId(templateId);
             
-            // 2. 获取该模板的所有启用事项
+            // 2. 获取该模板的所有启用事项（并按今日星期过滤）
             List<CheckinItem> templateItems = checkinItemMapper.selectByTemplateId(templateId);
             List<CheckinItem> activeItems = templateItems.stream()
                     .filter(item -> item.getStatus() == null || item.getStatus() != 2)
+                    .filter(item -> isItemApplicableForDate(item, date))
                     .collect(java.util.stream.Collectors.toList());
             
             // 3. 为每个学生同步事项
@@ -220,9 +226,11 @@ public class DailyCheckinServiceImpl implements DailyCheckinService {
         for (Long templateId : templateIds) {
             List<CheckinItem> items = checkinItemMapper.selectByTemplateId(templateId);
             for (CheckinItem item : items) {
-                // 只处理启用的事项（status != 2）
+                // 只处理启用的事项（status != 2），并过滤不适用今日的事项
                 if (item.getStatus() == null || item.getStatus() != 2) {
-                    currentTemplateItems.add(item);
+                    if (isItemApplicableForDate(item, date)) {
+                        currentTemplateItems.add(item);
+                    }
                 }
             }
         }
@@ -355,6 +363,23 @@ public class DailyCheckinServiceImpl implements DailyCheckinService {
         );
     }
     
+    /**
+     * 判断打卡事项是否适用于指定日期（根据 weekDays 位掩码）
+     * 位定义：1=周一, 2=周二, 4=周三, 8=周四, 16=周五, 32=周六, 64=周日, 127=每天
+     */
+    private boolean isItemApplicableForDate(CheckinItem item, Date date) {
+        Integer weekDays = item.getWeekDays();
+        if (weekDays == null || weekDays == 0 || weekDays == 127) {
+            return true;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        // Calendar.SUNDAY=1, MONDAY=2, ..., SATURDAY=7
+        int[] calDayToBit = {0, 64, 1, 2, 4, 8, 16, 32};
+        int todayBit = calDayToBit[cal.get(Calendar.DAY_OF_WEEK)];
+        return (weekDays & todayBit) != 0;
+    }
+
     /**
      * 判断两个日期是否为同一天（忽略时分秒）
      */

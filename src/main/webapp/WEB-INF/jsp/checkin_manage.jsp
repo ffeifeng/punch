@@ -196,17 +196,18 @@
             <% } %>
         </div>
         <table id="itemTable" class="easyui-datagrid" style="width:100%;height:350px;"
-               data-options="url:'/checkin/item/list',method:'get',pagination:true,rownumbers:true,singleSelect:true,fitColumns:true,queryParams:{}">
+               data-options="url:'/checkin/item/list',method:'get',pagination:true,rownumbers:true,singleSelect:true,fitColumns:false,queryParams:{}">
             <thead>
             <tr>
                 <th data-options="field:'id',width:40">ID</th>
-                <th data-options="field:'templateName',width:100">所属模板</th>
-                <th data-options="field:'itemName',width:100">事项名称</th>
-                <th data-options="field:'description',width:120">描述</th>
-                <th data-options="field:'points',width:60">积分</th>
-                <th data-options="field:'status',width:70,formatter:formatItemStatus">状态</th>
-                <th data-options="field:'timeRange',width:120,formatter:formatTimeRange">打卡时间</th>
-                <th data-options="field:'sortOrder',width:60">排序</th>
+                <th data-options="field:'templateName',width:90">所属模板</th>
+                <th data-options="field:'itemName',width:90">事项名称</th>
+                <th data-options="field:'description',width:100">描述</th>
+                <th data-options="field:'points',width:55">积分</th>
+                <th data-options="field:'status',width:65,formatter:formatItemStatus">状态</th>
+                <th data-options="field:'timeRange',width:110,formatter:formatTimeRange">打卡时间</th>
+                <th data-options="field:'weekDays',width:110,formatter:formatWeekDays">适用星期</th>
+                <th data-options="field:'sortOrder',width:55">排序</th>
                 <th data-options="field:'operation',width:120,formatter:formatItemOp">操作</th>
             </tr>
             </thead>
@@ -374,6 +375,22 @@
                 💡 提示：超出打卡时间范围，积分奖励将减半（留空表示全天有效）
             </div>
         </div>
+        <div style="margin-bottom:18px;">
+            <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;font-size:0.9rem;">
+                📅 适用星期 <span style="color:#718096;font-size:0.8rem;">（不勾选任何项 = 每天都出现）</span>
+            </label>
+            <div id="weekDaysContainer" style="display:flex;gap:12px;flex-wrap:wrap;padding:8px;background:#f7fafc;border-radius:6px;">
+                <label style="cursor:pointer;"><input type="checkbox" class="wd-cb" value="1"> 周一</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="wd-cb" value="2"> 周二</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="wd-cb" value="4"> 周三</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="wd-cb" value="8"> 周四</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="wd-cb" value="16"> 周五</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="wd-cb" value="32"> 周六</label>
+                <label style="cursor:pointer;"><input type="checkbox" class="wd-cb" value="64"> 周日</label>
+            </div>
+            <input type="hidden" name="weekDays" id="weekDaysHidden" value="127">
+            <div style="font-size:0.78rem;color:#718096;margin-top:4px;">💡 例如：只勾选周六、周日，则该事项仅在周末出现</div>
+        </div>
     </form>
 </div>
 <div id="dlg-item-btns" style="text-align:center;padding:10px;">
@@ -492,6 +509,16 @@ function formatTimeRange(val, row) {
     var endStr = end ? end.substring(0, 5) : '23:59';
     return '<span style="color:#319795;font-weight:500;">' + startStr + ' - ' + endStr + '</span>';
 }
+function formatWeekDays(val) {
+    var v = val == null ? 127 : parseInt(val);
+    if (v === 0 || v === 127) return '<span style="color:#38a169;">每天</span>';
+    var names = ['周一','周二','周三','周四','周五','周六','周日'];
+    var bits  = [1, 2, 4, 8, 16, 32, 64];
+    var parts = [];
+    for (var i = 0; i < 7; i++) { if (v & bits[i]) parts.push(names[i]); }
+    var fullText = parts.join(' ');
+    return '<span title="' + fullText + '" style="color:#805ad5;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + fullText + '</span>';
+}
 function formatTemplateOp(val,row) {
     var userRole = '<%= role %>';
     if (userRole === 'admin' || userRole === 'parent') {
@@ -603,17 +630,29 @@ function openAddItem() {
     setTimeout(function() {
         $('select[name=status]').combobox('setValue', 0);
     }, 100);
+    // 默认全选（每天）
+    $('.wd-cb').prop('checked', true);
     $('#dlgItem').dialog('open').dialog('setTitle','新增事项');
 }
 function openEditItem(id) {
     var row = $('#itemTable').datagrid('getRows').find(r=>r.id==id);
     if(row){
         $('#fmItem').form('load', row);
+        // 还原 weekDays 复选框
+        var wdVal = (row.weekDays != null && row.weekDays !== 0) ? row.weekDays : 127;
+        $('.wd-cb').each(function() {
+            $(this).prop('checked', (wdVal & parseInt($(this).val())) !== 0);
+        });
         $('#dlgItem').dialog('open').dialog('setTitle','编辑事项');
     }
 }
 function saveItem() {
     var data = $('#fmItem').serializeArray().reduce(function(obj, item) { obj[item.name] = item.value; return obj; }, {});
+    
+    // 计算 weekDays 位掩码
+    var weekDays = 0;
+    $('.wd-cb:checked').each(function() { weekDays += parseInt($(this).val()); });
+    data.weekDays = (weekDays === 0) ? 127 : weekDays; // 未勾选任何项则视为每天
     
     // 处理时间字段格式
     if (data.checkinStartTime && data.checkinStartTime.length > 5) {

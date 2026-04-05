@@ -9,6 +9,7 @@
         <result property="points" column="points" />
         <result property="sortOrder" column="sort_order" />
         <result property="status" column="status" />
+        <result property="weekDays" column="week_days" />
         <result property="checkinStartTime" column="checkin_start_time" />
         <result property="checkinEndTime" column="checkin_end_time" />
         <result property="createTime" column="create_time" />
@@ -35,6 +36,7 @@
             <if test="points != null">points,</if>
             <if test="sortOrder != null">sort_order,</if>
             <if test="status != null">status,</if>
+            <if test="weekDays != null">week_days,</if>
             <if test="checkinStartTime != null">checkin_start_time,</if>
             <if test="checkinEndTime != null">checkin_end_time,</if>
             <if test="createTime != null">create_time,</if>
@@ -48,6 +50,7 @@
             <if test="points != null">#{points},</if>
             <if test="sortOrder != null">#{sortOrder},</if>
             <if test="status != null">#{status},</if>
+            <if test="weekDays != null">#{weekDays},</if>
             <if test="checkinStartTime != null">#{checkinStartTime},</if>
             <if test="checkinEndTime != null">#{checkinEndTime},</if>
             <if test="createTime != null">#{createTime},</if>
@@ -62,6 +65,7 @@
             <if test="points != null">points=#{points},</if>
             <if test="sortOrder != null">sort_order=#{sortOrder},</if>
             <if test="status != null">status=#{status},</if>
+            <if test="weekDays != null">week_days=#{weekDays},</if>
             <if test="checkinStartTime != null">checkin_start_time=#{checkinStartTime},</if>
             <if test="checkinEndTime != null">checkin_end_time=#{checkinEndTime},</if>
             <if test="createTime != null">create_time=#{createTime},</if>
