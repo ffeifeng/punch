@@ -5,11 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>配置管理</title>
-    <link rel="stylesheet" href="/static/easyui/themes/metro/easyui.css">
-    <link rel="stylesheet" href="/static/easyui/themes/icon.css">
-    <script src="/static/js/jquery.min.js"></script>
-    <script src="/static/easyui/jquery.easyui.min.js"></script>
-    <script src="/static/easyui/locale/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/jquery.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f7fafc; margin: 0; padding: 20px; }
         .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
