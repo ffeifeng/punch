@@ -1,7 +1,6 @@
 package com.punch.service;
 
 import com.punch.config.PunchProperties;
-import com.punch.service.DailyCheckinService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

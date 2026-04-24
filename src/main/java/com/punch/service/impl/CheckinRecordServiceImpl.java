@@ -183,10 +183,13 @@ public class CheckinRecordServiceImpl implements CheckinRecordService {
         record.setUpdateBy(operatorId);
         record.setUpdateTime(new Date());
         recordMapper.update(record);
-        // 联动积分（撤销扣除）
+        // 联动积分（扣除实际获得的积分，超时打卡可能只有一半，不能直接用 item.getPoints()）
         CheckinItem item = checkinItemMapper.selectById(record.getItemId());
         if(item != null && item.getPoints() != null && item.getPoints() > 0) {
-            pointsRecordService.reducePoints(record.getStudentId(), item.getPoints(), 2, operatorId, "撤销扣除积分", record.getId());
+            int actualPointsToDeduct = getActualPointsFromRecord(record.getStudentId(), record.getId());
+            if (actualPointsToDeduct > 0) {
+                pointsRecordService.reducePoints(record.getStudentId(), actualPointsToDeduct, 2, operatorId, "撤销扣除积分", record.getId());
+            }
         }
         // 日志记录
         OperationLog log = new OperationLog();

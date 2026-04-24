@@ -92,10 +92,14 @@ public class PointsRecordServiceImpl implements PointsRecordService {
 
     @Override
     public int reducePoints(Long studentId, int points, int type, Long operatorId, String remark, Long recordId) {
-        int balance = getCurrentBalance(studentId) - points;
+        int currentBalance = getCurrentBalance(studentId);
+        // 安全兜底：实际扣除不超过当前余额，余额最低为0
+        int actualDeduct = Math.min(points, currentBalance);
+        if (actualDeduct <= 0) return currentBalance;
+        int balance = currentBalance - actualDeduct;
         PointsRecord pr = new PointsRecord();
         pr.setStudentId(studentId);
-        pr.setPoints(-points);
+        pr.setPoints(-actualDeduct);
         pr.setType(type);
         pr.setBalance(balance);
         pr.setOperatorId(operatorId);

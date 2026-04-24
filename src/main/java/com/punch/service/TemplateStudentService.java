@@ -1,6 +1,5 @@
 package com.punch.service;
 
-import com.punch.entity.TemplateStudent;
 import java.util.List;
 
 public interface TemplateStudentService {

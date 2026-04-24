@@ -33,6 +33,8 @@ public class CheckinRecordController {
     private CheckinCompleteRewardMapper checkinCompleteRewardMapper;
     @Autowired
     private UserService userService;
+    @Autowired
+    private com.punch.mapper.CheckinItemMapper checkinItemMapper;
 
     // 查询打卡记录（按角色）
     @GetMapping("/list")
@@ -165,26 +167,82 @@ public class CheckinRecordController {
     // 撤销今日打卡（根据学生ID和事项ID）
     @PostMapping("/revokeToday")
     @ResponseBody
-    public String revokeToday(@RequestParam Long itemId, 
-                             @RequestParam(required = false) Long studentId, 
-                             HttpSession session, 
+    public Map<String, Object> revokeToday(@RequestParam Long itemId,
+                             @RequestParam(required = false) Long studentId,
+                             HttpSession session,
                              HttpServletRequest request) {
+        Map<String, Object> resp = new HashMap<>();
         User user = (User) session.getAttribute("user");
-        if (user == null) return "no_permission";
-        
+        if (user == null) { resp.put("result", "no_permission"); return resp; }
+
         Long targetStudentId;
         // 学生只能撤销自己的打卡
         if (user.getParentId() != null) {
             targetStudentId = user.getId();
-        } 
+        }
         // admin和家长可以撤销指定学生的打卡
         else {
             targetStudentId = (studentId != null) ? studentId : user.getId();
         }
-        
+
         Date today = new Date();
         String clientIp = com.punch.util.IpUtils.getClientIpAddressWithLocalDetection(request);
-        return recordService.revokeTodayCheckin(targetStudentId, itemId, today, user.getId(), clientIp);
+        String result = recordService.revokeTodayCheckin(targetStudentId, itemId, today, user.getId(), clientIp);
+        resp.put("result", result);
+
+        // 撤销成功后，检查是否需要收回全部完成的抽奖奖励
+        if ("success".equals(result)) {
+            tryRevokeLotteryReward(targetStudentId, itemId, today, session, resp);
+        }
+        return resp;
+    }
+
+    /**
+     * 撤销打卡后，检查是否需要收回今日全部完成奖励。
+     *
+     * 核心规则：
+     *  - 奖励券未使用（current >= rewarded）：全部收回 + 删除奖励记录，允许再次打满后重新发放
+     *  - 奖励券已部分或全部用掉（current < rewarded）：只收回剩余的，但【保留】奖励记录，
+     *    防止孩子重新打完后再次触发发放（已用的券不能凭空追回）
+     */
+    private void tryRevokeLotteryReward(Long studentId, Long itemId, Date today,
+                                        HttpSession session, Map<String, Object> resp) {
+        try {
+            // 通过事项找到所属模板
+            com.punch.entity.CheckinItem checkinItem = checkinItemMapper.selectById(itemId);
+            if (checkinItem == null || checkinItem.getTemplateId() == null) return;
+            Long templateId = checkinItem.getTemplateId();
+
+            // 查找今日是否已发放过奖励
+            CheckinCompleteReward reward = checkinCompleteRewardMapper.selectByStudentTemplateDate(studentId, templateId, today);
+            if (reward == null) return;
+
+            User student = userService.getById(studentId);
+            if (student == null) return;
+
+            int current = student.getLotteryCount() != null ? student.getLotteryCount() : 0;
+            int rewarded = reward.getLotteryCount() != null ? reward.getLotteryCount() : 0;
+            // 实际可收回数量：不能超过当前持有量
+            int toRevoke = Math.min(current, rewarded);
+            int newCount = current - toRevoke;
+
+            student.setLotteryCount(newCount);
+            userService.updateUser(student);
+            session.setAttribute("user", userService.getById(studentId));
+
+            resp.put("lotteryRevoked", toRevoke > 0);
+            resp.put("lotteryRevokedCount", toRevoke);
+            resp.put("lotteryCount", newCount);
+
+            // 关键判断：只有奖励券完整归还（说明孩子一次都没用），才删除奖励记录，
+            // 允许重新打满后再次发放；若已消费过（哪怕一次），保留记录防止重复发放。
+            if (toRevoke == rewarded) {
+                checkinCompleteRewardMapper.deleteByStudentTemplateDate(studentId, templateId, today);
+            }
+
+        } catch (Exception e) {
+            // 奖励回收失败不影响撤销结果
+        }
     }
 
     // 补打卡（家长/管理员）

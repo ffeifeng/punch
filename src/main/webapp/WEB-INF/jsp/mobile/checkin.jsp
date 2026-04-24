@@ -1218,12 +1218,21 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.text())
-            .then(result => {
+            .then(response => response.json())
+            .then(data => {
+                const result = data.result;
                 if (result === 'success') {
                     showMessage('撤销成功', 'success');
-                    updateItemStatus(itemId, 0); // 局部更新状态
-                    updateTotalPoints(); // 更新总积分
+                    updateItemStatus(itemId, 0);
+                    updateTotalPoints();
+                    // 若全部完成奖励被收回，更新抽奖次数显示
+                    if (data.lotteryRevoked) {
+                        lotteryCount = data.lotteryCount;
+                        updateLotteryUI();
+                        setTimeout(function() {
+                            showMessage('⚠️ 打卡奖励已收回 ' + data.lotteryRevokedCount + ' 次抽奖机会', 'info');
+                        }, 1200);
+                    }
                 } else if (result === 'not_found') {
                     showMessage('未找到今日的打卡记录', 'info');
                 } else if (result === 'no_permission') {
@@ -1392,6 +1401,7 @@
 
         // ==================== 积分兑换功能 ====================
         var exchangeRatio = 0;
+        var exchangeMaxTimes = 0;
 
         function loadExchangeConfig() {
             return fetch('/mobile/exchangeConfig')
@@ -1416,11 +1426,22 @@
                         showMessage('积分兑换功能未开启', 'info'); return;
                     }
                     exchangeRatio = data.ratio;
+                    exchangeMaxTimes = data.maxExchangeable || 0;
                     document.getElementById('exchangeCurrentPoints').textContent = data.currentPoints + ' 积分';
                     document.getElementById('exchangeRatioLabel').textContent = data.ratio + ' 积分 = 1 次抽奖';
-                    document.getElementById('exchangeMaxTimes').textContent = data.maxExchangeable;
-                    document.getElementById('exchangeTimes').value = 1;
-                    document.getElementById('exchangeTimes').max = data.maxExchangeable;
+                    document.getElementById('exchangeMaxTimes').textContent = exchangeMaxTimes;
+                    var input = document.getElementById('exchangeTimes');
+                    input.max = exchangeMaxTimes;
+                    input.value = exchangeMaxTimes > 0 ? 1 : 0;
+                    input.disabled = exchangeMaxTimes <= 0;
+                    var confirmBtn = document.getElementById('exchangeConfirmBtn');
+                    if (exchangeMaxTimes <= 0) {
+                        confirmBtn.disabled = true;
+                        confirmBtn.textContent = '积分不足，无法兑换';
+                    } else {
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = '💱 确认兑换';
+                    }
                     updateExchangeCostHint();
                     document.getElementById('exchangeModal').classList.add('show');
                 });
@@ -1433,18 +1454,29 @@
 
         function adjustExchange(delta) {
             var input = document.getElementById('exchangeTimes');
-            var max = parseInt(input.max) || 99;
+            if (exchangeMaxTimes <= 0) return;
             var val = parseInt(input.value) || 1;
-            val = Math.max(1, Math.min(max, val + delta));
+            val = Math.max(1, Math.min(exchangeMaxTimes, val + delta));
             input.value = val;
             updateExchangeCostHint();
         }
 
         document.addEventListener('input', function(e) {
-            if (e.target && e.target.id === 'exchangeTimes') updateExchangeCostHint();
+            if (e.target && e.target.id === 'exchangeTimes') {
+                var val = parseInt(e.target.value) || 1;
+                if (exchangeMaxTimes > 0) {
+                    val = Math.max(1, Math.min(exchangeMaxTimes, val));
+                    e.target.value = val;
+                }
+                updateExchangeCostHint();
+            }
         });
 
         function updateExchangeCostHint() {
+            if (exchangeMaxTimes <= 0) {
+                document.getElementById('exchangeCostHint').textContent = '当前积分不足，无法兑换';
+                return;
+            }
             var times = parseInt(document.getElementById('exchangeTimes').value) || 1;
             var cost = times * exchangeRatio;
             document.getElementById('exchangeCostHint').textContent =
@@ -1454,6 +1486,12 @@
         function doExchange() {
             var times = parseInt(document.getElementById('exchangeTimes').value);
             if (!times || times <= 0) { showMessage('请输入有效的兑换次数', 'error'); return; }
+            if (times > exchangeMaxTimes) {
+                showMessage('兑换次数不能超过 ' + exchangeMaxTimes + ' 次（积分不足）', 'error');
+                document.getElementById('exchangeTimes').value = exchangeMaxTimes > 0 ? exchangeMaxTimes : 1;
+                updateExchangeCostHint();
+                return;
+            }
             var btn = document.getElementById('exchangeConfirmBtn');
             btn.disabled = true;
             fetch('/mobile/exchangePoints', {

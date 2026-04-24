@@ -441,16 +441,32 @@ public class UserController {
     }
     
     /**
-     * 设置学生抽奖次数
+     * 调整学生抽奖次数（增加或减少，不再直接覆盖）
      */
     @PostMapping("/setLotteryCount")
     @ResponseBody
-    public String setLotteryCount(@RequestParam Long studentId, @RequestParam int lotteryCount, HttpSession session) {
+    public Map<String, Object> setLotteryCount(@RequestParam Long studentId,
+                                               @RequestParam int delta,
+                                               HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User operator = (User) session.getAttribute("user");
+        if (operator == null) { result.put("success", false); result.put("message", "未登录"); return result; }
+
         User user = userService.getById(studentId);
-        if (user == null) return "fail";
-        user.setLotteryCount(lotteryCount);
+        if (user == null) { result.put("success", false); result.put("message", "用户不存在"); return result; }
+
+        int current = user.getLotteryCount() != null ? user.getLotteryCount() : 0;
+        int newCount = current + delta;
+        if (newCount < 0) {
+            result.put("success", false);
+            result.put("message", "操作后次数不能为负（当前 " + current + " 次，减少 " + Math.abs(delta) + " 次不够）");
+            return result;
+        }
+        user.setLotteryCount(newCount);
         userService.updateUser(user);
-        return "success";
+        result.put("success", true);
+        result.put("newCount", newCount);
+        return result;
     }
 
     /**

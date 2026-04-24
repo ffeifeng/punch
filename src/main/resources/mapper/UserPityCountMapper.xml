@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.UserPityCountMapper">
+
+    <resultMap id="BaseResultMap" type="com.punch.entity.UserPityCount">
+        <result property="studentId" column="student_id"/>
+        <result property="itemId"    column="item_id"/>
+        <result property="count"     column="count"/>
+    </resultMap>
+
+    <select id="selectByStudentId" resultMap="BaseResultMap">
+        SELECT student_id, item_id, count
+        FROM user_pity_count
+        WHERE student_id = #{studentId}
+    </select>
+
+    <!-- INSERT ... ON DUPLICATE KEY UPDATE 实现 upsert -->
+    <insert id="upsert">
+        INSERT INTO user_pity_count (student_id, item_id, count)
+        VALUES (#{studentId}, #{itemId}, #{count})
+        ON DUPLICATE KEY UPDATE count = #{count}
+    </insert>
+
+</mapper>

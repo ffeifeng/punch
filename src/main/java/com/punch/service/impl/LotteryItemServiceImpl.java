@@ -30,6 +30,11 @@ public class LotteryItemServiceImpl implements LotteryItemService {
     }
 
     @Override
+    public List<LotteryItem> getEnabledPityPrizesByParentId(Long parentId) {
+        return lotteryItemMapper.selectEnabledPityByParentId(parentId);
+    }
+
+    @Override
     public int create(LotteryItem item) {
         item.setCreateTime(new Date());
         item.setUpdateTime(new Date());

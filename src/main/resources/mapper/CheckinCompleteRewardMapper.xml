@@ -14,4 +14,19 @@
           AND reward_date = DATE(#{rewardDate})
     </select>
 
+    <select id="selectByStudentTemplateDate" resultType="com.punch.entity.CheckinCompleteReward">
+        SELECT * FROM checkin_complete_reward
+        WHERE student_id = #{studentId}
+          AND template_id = #{templateId}
+          AND reward_date = DATE(#{rewardDate})
+        LIMIT 1
+    </select>
+
+    <delete id="deleteByStudentTemplateDate">
+        DELETE FROM checkin_complete_reward
+        WHERE student_id = #{studentId}
+          AND template_id = #{templateId}
+          AND reward_date = DATE(#{rewardDate})
+    </delete>
+
 </mapper>

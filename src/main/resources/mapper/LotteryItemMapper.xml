@@ -4,12 +4,13 @@
 
     <resultMap id="BaseResultMap" type="com.punch.entity.LotteryItem">
         <id property="id" column="id"/>
-        <result property="parentId" column="parent_id"/>
-        <result property="name" column="name"/>
-        <result property="probability" column="probability"/>
-        <result property="status" column="status"/>
-        <result property="createTime" column="create_time"/>
-        <result property="updateTime" column="update_time"/>
+        <result property="parentId"      column="parent_id"/>
+        <result property="name"          column="name"/>
+        <result property="probability"   column="probability"/>
+        <result property="status"        column="status"/>
+        <result property="pityThreshold" column="pity_threshold"/>
+        <result property="createTime"    column="create_time"/>
+        <result property="updateTime"    column="update_time"/>
     </resultMap>
 
     <select id="selectById" resultMap="BaseResultMap">
@@ -24,9 +25,19 @@
         SELECT * FROM lottery_item WHERE parent_id = #{parentId} AND status = 1 ORDER BY id ASC
     </select>
 
+    <!-- 查询启用的保底奖品：pity_threshold 不为 NULL 且 > 0 -->
+    <select id="selectEnabledPityByParentId" resultMap="BaseResultMap">
+        SELECT * FROM lottery_item
+        WHERE parent_id = #{parentId}
+          AND status = 1
+          AND pity_threshold IS NOT NULL
+          AND pity_threshold > 0
+        ORDER BY pity_threshold ASC
+    </select>
+
     <insert id="insert" parameterType="com.punch.entity.LotteryItem" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO lottery_item (parent_id, name, probability, status, create_time, update_time)
-        VALUES (#{parentId}, #{name}, #{probability}, #{status}, #{createTime}, #{updateTime})
+        INSERT INTO lottery_item (parent_id, name, probability, status, pity_threshold, create_time, update_time)
+        VALUES (#{parentId}, #{name}, #{probability}, #{status}, #{pityThreshold, jdbcType=INTEGER}, #{createTime}, #{updateTime})
     </insert>
 
     <update id="update" parameterType="com.punch.entity.LotteryItem">
@@ -35,6 +46,7 @@
             <if test="name != null">name = #{name},</if>
             <if test="probability != null">probability = #{probability},</if>
             <if test="status != null">status = #{status},</if>
+            pity_threshold = #{pityThreshold, jdbcType=INTEGER},
             <if test="updateTime != null">update_time = #{updateTime},</if>
         </set>
         WHERE id = #{id}

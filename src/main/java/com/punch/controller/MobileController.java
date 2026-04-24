@@ -43,6 +43,9 @@ public class MobileController {
 
     @Autowired
     private SystemConfigService systemConfigService;
+
+    @Autowired
+    private com.punch.mapper.UserPityCountMapper userPityCountMapper;
     
     /**
      * 移动端登录页面
@@ -206,6 +209,8 @@ public class MobileController {
 
     /**
      * 执行抽奖（学生端）
+     * 保底机制：每个保底奖品拥有独立阈值和独立计数器。
+     * 若本次抽奖使某个保底奖品的计数器达到阈值，且本次自然中奖不是该奖品，则强制赠送最"逾期"的保底奖品。
      */
     @PostMapping("/doLottery")
     @ResponseBody
@@ -247,11 +252,70 @@ public class MobileController {
             return result;
         }
 
+        // ========== 保底机制（各奖品独立阈值 + 独立计数器）==========
+        java.util.List<LotteryItem> pityPrizes =
+                lotteryItemService.getEnabledPityPrizesByParentId(student.getParentId());
+
+        // 读取该学生对所有保底奖品的当前计数
+        java.util.Map<Long, Integer> pityCountMap = new java.util.HashMap<>();
+        if (!pityPrizes.isEmpty()) {
+            for (com.punch.entity.UserPityCount c :
+                    userPityCountMapper.selectByStudentId(student.getId())) {
+                pityCountMap.put(c.getItemId(), c.getCount());
+            }
+        }
+
+        boolean pityTriggered = false;
+        LotteryItem forcedPrize = null;
+
+        if (!pityPrizes.isEmpty()) {
+            // 找出本次抽奖后会达到（或超过）各自阈值的保底奖品
+            java.util.List<LotteryItem> triggered = new java.util.ArrayList<>();
+            for (LotteryItem pityItem : pityPrizes) {
+                int cur = pityCountMap.getOrDefault(pityItem.getId(), 0);
+                if ((cur + 1) >= pityItem.getPityThreshold()) {
+                    triggered.add(pityItem);
+                }
+            }
+
+            if (!triggered.isEmpty()) {
+                // 判断本次自然中奖是否已经命中了某个触发的保底奖品
+                final Long naturalWonId = won.getId();
+                boolean naturalHitsTriggered = triggered.stream()
+                        .anyMatch(t -> t.getId().equals(naturalWonId));
+
+                if (!naturalHitsTriggered) {
+                    // 强制赠送"最逾期"的保底奖品：
+                    //   优先按 (count+1 - threshold) 降序（欠账最多的先还）；
+                    //   相同时按 threshold 升序（阈值最小的优先）
+                    triggered.sort((a, b) -> {
+                        int overdueA = pityCountMap.getOrDefault(a.getId(), 0) + 1 - a.getPityThreshold();
+                        int overdueB = pityCountMap.getOrDefault(b.getId(), 0) + 1 - b.getPityThreshold();
+                        if (overdueB != overdueA) return overdueB - overdueA;
+                        return a.getPityThreshold() - b.getPityThreshold();
+                    });
+                    forcedPrize = triggered.get(0);
+                    won = forcedPrize;
+                    pityTriggered = true;
+                }
+                // 若自然中了触发列表中的某个保底奖品，视为"自然命中保底"，无需强制
+            }
+        }
+
         // 扣减抽奖次数
         student.setLotteryCount(remaining - 1);
         userService.updateUser(student);
-        // 更新session
         session.setAttribute("user", userService.getById(student.getId()));
+
+        // 更新所有保底奖品的独立计数器
+        final Long wonItemId = won.getId();
+        for (LotteryItem pityItem : pityPrizes) {
+            int newCount = wonItemId.equals(pityItem.getId())
+                    ? 0  // 中了（自然或强制），重置
+                    : pityCountMap.getOrDefault(pityItem.getId(), 0) + 1;  // 未中，+1
+            userPityCountMapper.upsert(student.getId(), pityItem.getId(), newCount);
+        }
+        // ========== 保底机制结束 ==========
 
         // 创建抽奖记录
         LotteryRecord record = new LotteryRecord();
@@ -263,6 +327,7 @@ public class MobileController {
         result.put("success", true);
         result.put("prize", won.getName());
         result.put("remainingCount", remaining - 1);
+        result.put("pityTriggered", pityTriggered);
         return result;
     }
 
@@ -333,10 +398,12 @@ public class MobileController {
         }
 
         int currentPoints = pointsRecordService.getCurrentBalance(student.getId());
+        int maxExchangeable = currentPoints / ratio;
         int needed = ratio * times;
-        if (currentPoints < needed) {
+
+        if (times > maxExchangeable || currentPoints < needed) {
             result.put("success", false);
-            result.put("message", "积分不足！需要 " + needed + " 积分，当前仅有 " + currentPoints + " 积分");
+            result.put("message", "积分不足！当前 " + currentPoints + " 积分最多可兑换 " + maxExchangeable + " 次");
             return result;
         }
 
@@ -344,7 +411,8 @@ public class MobileController {
         pointsRecordService.reducePoints(student.getId(), needed, 3, student.getId(),
                 "积分兑换抽奖 " + times + " 次（每次 " + ratio + " 积分）", null);
 
-        // 增加抽奖次数
+        // 重新获取最新学生数据，避免用旧的 totalPoints 覆盖刚才的扣分结果
+        student = userService.getById(student.getId());
         int newLotteryCount = (student.getLotteryCount() != null ? student.getLotteryCount() : 0) + times;
         student.setLotteryCount(newLotteryCount);
         userService.updateUser(student);

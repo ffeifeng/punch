@@ -30,6 +30,7 @@
             <th data-options="field:'id',width:50">ID</th>
             <th data-options="field:'name',width:150">奖品名称</th>
             <th data-options="field:'probability',width:100,formatter:formatProb">概率(%)</th>
+            <th data-options="field:'pityThreshold',width:110,formatter:formatPityThreshold">保底阈值</th>
             <th data-options="field:'status',width:80,formatter:formatStatus">状态</th>
             <th data-options="field:'createTime',width:130">创建时间</th>
             <th data-options="field:'operation',width:180,formatter:formatOp">操作</th>
@@ -58,6 +59,15 @@
                     data-options="editable:false,valueField:'value',textField:'label',data:[{value:1,label:'启用'},{value:0,label:'禁用'}]"
                     style="width:100%;height:36px;"></select>
         </div>
+        <div style="margin-bottom:18px;">
+            <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;">🍀 保底阈值（次）</label>
+            <input name="pityThreshold" type="number" min="0" placeholder="留空或填0表示普通奖品"
+                   style="width:100%;height:36px;padding:0 10px;border:1px solid #d2d6dc;border-radius:4px;box-sizing:border-box;font-size:0.95rem;">
+            <div style="font-size:0.78rem;color:#a0aec0;margin-top:4px;">
+                留空或填 0 = 普通奖品；填正整数 = 保底奖品。<br>
+                例：A填10表示连续10次未中A则第10次必得A；B填20表示20次保底B，各自独立计数。
+            </div>
+        </div>
     </form>
 </div>
 <div id="dlg-buttons" style="text-align:center;padding:10px;">
@@ -79,6 +89,10 @@ function calcTotal() {
 function formatProb(val) {
     return '<span style="color:#319795;font-weight:bold;">' + (parseFloat(val) || 0).toFixed(2) + '%</span>';
 }
+function formatPityThreshold(val) {
+    if (val == null || val === '' || val == 0) return '<span style="color:#a0aec0;">-</span>';
+    return '<span style="color:#d69e2e;font-weight:bold;">🍀 ' + val + ' 次保底</span>';
+}
 function formatStatus(val) {
     return val == 1
         ? '<span style="color:#38a169;font-weight:bold;">✅ 启用</span>'
@@ -92,6 +106,7 @@ function formatOp(val, row) {
 function openAdd() {
     $('#fm').form('clear');
     $('select[name="status"]').combobox('setValue', 1);
+    $('input[name="pityThreshold"]').val('');
     $('#dlg').dialog('open').dialog('setTitle', '新增奖品');
 }
 function openEdit(id) {
@@ -100,6 +115,7 @@ function openEdit(id) {
         $('#fm').form('clear');
         $('#fm').form('load', row);
         $('select[name="status"]').combobox('setValue', row.status);
+        $('input[name="pityThreshold"]').val(row.pityThreshold || '');
         $('#dlg').dialog('open').dialog('setTitle', '编辑奖品');
     }
 }

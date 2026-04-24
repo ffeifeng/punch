@@ -38,8 +38,7 @@
     </div>
 </div>
 
-<!-- 积分兑换抽奖配置 -->
-<div class="config-card">
+<!-- 积分兑换抽奖配置 --><div class="config-card">
     <div class="config-card-title">🎰 积分兑换抽奖配置</div>
 
     <div style="margin-bottom:16px;">

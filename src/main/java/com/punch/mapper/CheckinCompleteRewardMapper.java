@@ -16,4 +16,18 @@ public interface CheckinCompleteRewardMapper {
         @Param("templateId") Long templateId,
         @Param("rewardDate") Date rewardDate
     );
+
+    /** 获取某学生某模板某日的奖励记录（用于撤销时取回奖励次数） */
+    CheckinCompleteReward selectByStudentTemplateDate(
+        @Param("studentId") Long studentId,
+        @Param("templateId") Long templateId,
+        @Param("rewardDate") Date rewardDate
+    );
+
+    /** 删除某学生某模板某日的奖励记录（撤销打卡时收回奖励） */
+    int deleteByStudentTemplateDate(
+        @Param("studentId") Long studentId,
+        @Param("templateId") Long templateId,
+        @Param("rewardDate") Date rewardDate
+    );
 }

@@ -195,21 +195,77 @@ function formatLotteryCount(val, row) {
     return '<span style="color:' + color + ';font-weight:bold;">🎰 ' + count + ' 次</span>';
 }
 function setLotteryCount(studentId, current) {
-    $.messager.prompt('设置抽奖次数', '请输入要赋予该孩子的抽奖次数（当前：' + current + '次）：', function(val) {
-        if (val === null || val === undefined) return;
-        var count = parseInt(val);
-        if (isNaN(count) || count < 0) {
-            $.messager.alert('提示', '请输入有效的非负整数', 'warning');
-            return;
-        }
-        $.post('/user/setLotteryCount', { studentId: studentId, lotteryCount: count }, function(res) {
-            if (res === 'success') {
-                $.messager.show({ title: '成功', msg: '抽奖次数已设置为 ' + count + ' 次', showType: 'slide', timeout: 2000 });
-                $('#userTable').datagrid('reload');
-            } else {
-                $.messager.alert('错误', '设置失败', 'error');
+    // 动态创建调整弹窗
+    var dlgId = 'lotteryAdjustDlg';
+    if ($('#' + dlgId).length === 0) {
+        $('body').append(
+            '<div id="' + dlgId + '" style="padding:20px 24px;">' +
+            '  <p style="margin:0 0 14px;font-size:0.95rem;color:#4a5568;">当前抽奖次数：<strong id="lotteryCurrentVal" style="color:#319795;font-size:1.15em;"></strong> 次</p>' +
+            '  <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">' +
+            '    <label style="color:#4a5568;font-size:0.9rem;white-space:nowrap;">操作：</label>' +
+            '    <select id="lotteryOp" style="padding:5px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:0.9rem;">' +
+            '      <option value="add">➕ 增加</option>' +
+            '      <option value="reduce">➖ 减少</option>' +
+            '    </select>' +
+            '  </div>' +
+            '  <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">' +
+            '    <label style="color:#4a5568;font-size:0.9rem;white-space:nowrap;">次数：</label>' +
+            '    <input type="number" id="lotteryDelta" min="1" value="1" style="width:80px;padding:5px 8px;border:1px solid #cbd5e0;border-radius:6px;font-size:0.95rem;">' +
+            '  </div>' +
+            '  <p id="lotteryPreview" style="margin:10px 0 0;font-size:0.85rem;color:#718096;"></p>' +
+            '</div>'
+        );
+        // 监听实时预览
+        $(document).on('change input', '#lotteryOp, #lotteryDelta', function() { updateLotteryPreview(); });
+    }
+
+    var curCount = current || 0;
+    $('#lotteryCurrentVal').text(curCount);
+    $('#lotteryOp').val('add');
+    $('#lotteryDelta').val(1);
+    updateLotteryPreview(curCount);
+
+    function updateLotteryPreview(base) {
+        var cur = (base !== undefined) ? base : curCount;
+        var op = $('#lotteryOp').val();
+        var delta = parseInt($('#lotteryDelta').val()) || 0;
+        var result = op === 'add' ? cur + delta : cur - delta;
+        var color = result < 0 ? '#e53e3e' : '#319795';
+        $('#lotteryPreview').html('调整后次数：<strong style="color:' + color + ';">' + result + ' 次</strong>' + (result < 0 ? ' <span style="color:#e53e3e;">（不足，无法操作）</span>' : ''));
+    }
+
+    $('<div/>').dialog({
+        title: '🎰 调整抽奖次数',
+        width: 320,
+        height: 260,
+        modal: true,
+        content: $('#' + dlgId).show(),
+        buttons: [{
+            text: '确认',
+            iconCls: 'icon-ok',
+            handler: function() {
+                var op = $('#lotteryOp').val();
+                var delta = parseInt($('#lotteryDelta').val());
+                if (isNaN(delta) || delta <= 0) {
+                    $.messager.alert('提示', '请输入有效的正整数次数', 'warning'); return;
+                }
+                var finalDelta = op === 'add' ? delta : -delta;
+                $.post('/user/setLotteryCount', { studentId: studentId, delta: finalDelta }, function(res) {
+                    if (res.success) {
+                        $.messager.show({ title: '成功', msg: '抽奖次数已调整为 ' + res.newCount + ' 次', showType: 'slide', timeout: 2000 });
+                        $('#userTable').datagrid('reload');
+                        $(this).closest('.window-body').parent().window('close');
+                    } else {
+                        $.messager.alert('失败', res.message || '操作失败', 'error');
+                    }
+                }, 'json');
             }
-        });
+        },{
+            text: '取消',
+            handler: function() {
+                $(this).closest('.window-body').parent().window('close');
+            }
+        }]
     });
 }
 function formatStatus(val) {
