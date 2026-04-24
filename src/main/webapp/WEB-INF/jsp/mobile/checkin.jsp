@@ -780,6 +780,13 @@
                     <span class="btn-icon">🏆</span>
                     <span>我的奖品</span>
                 </button>
+                <!-- 小红花入口 -->
+                <button class="points-action-btn" id="flowerEntryBtn" onclick="openFlowerModal()"
+                        style="background:linear-gradient(135deg,#ff758c,#ff7eb3);border:none;">
+                    <span class="btn-icon">🌸</span>
+                    <span>小红花</span>
+                    <span style="font-size:0.72rem;opacity:0.9;" id="flowerCountBadge">0 朵</span>
+                </button>
             </div>
             <!-- 积分兑换按钮（有兑换配置才显示） -->
             <div id="exchangeEntry" style="display:none;margin-top:10px;">
@@ -1684,6 +1691,10 @@
                     if (data.success) {
                         var prize = data.prize;
                         var remaining = data.remainingCount;
+                        // 若抽到小红花奖品，更新花朵余量显示
+                        if (data.flowerRewarded && data.flowerRewarded > 0) {
+                            updateFlowerBadge(data.flowerBalance || 0);
+                        }
 
                         // 找到中奖奖品的索引
                         var prizeIndex = lotteryItems.findIndex(function(i) { return i.name === prize; });
@@ -1709,8 +1720,7 @@
                         var totalRotation = currentAngle + (5 * 2 * Math.PI) + (targetAngle - (currentAngle % (2 * Math.PI)));
 
                         spinWheel(totalRotation, prize, remaining);
-                    } else {
-                        // 同步后端返回的最新次数
+                    } else {                        // 同步后端返回的最新次数
                         if (typeof data.remainingCount !== 'undefined') {
                             lotteryCount = data.remainingCount;
                             updateLotteryUI();
@@ -1815,5 +1825,274 @@
             loadExchangeConfig();
         });
     </script>
+
+<!-- ==================== 小红花面板 ==================== -->
+<div id="flowerModal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.45);overscroll-behavior:contain;">
+  <div style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:center;">
+    <div style="width:100%;max-width:480px;height:78vh;background:#fff;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -4px 24px rgba(0,0,0,0.15);">
+    <!-- 头部（固定，不滚动） -->
+    <div style="background:linear-gradient(135deg,#ff758c,#ff7eb3);padding:16px 20px 18px;border-radius:20px 20px 0 0;color:#fff;flex-shrink:0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:1.15rem;font-weight:700;">🌸 我的小红花</div>
+        <button onclick="closeFlowerModal()" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">✕</button>
+      </div>
+      <div style="margin-top:10px;display:flex;align-items:baseline;gap:8px;">
+        <span style="font-size:2.5rem;font-weight:900;" id="flowerBalanceDisplay">0</span>
+        <span style="font-size:1rem;opacity:0.9;">朵</span>
+      </div>
+    </div>
+    <!-- Tab 导航（固定，不滚动） -->
+    <div style="display:flex;border-bottom:2px solid #f0f0f0;background:#fff;flex-shrink:0;">
+      <button id="flowerTab_redeem" onclick="switchFlowerTab('redeem')"
+              style="flex:1;padding:12px 0;border:none;background:none;font-size:0.9rem;font-weight:600;color:#ff758c;border-bottom:2.5px solid #ff758c;cursor:pointer;">兑换</button>
+      <button id="flowerTab_history" onclick="switchFlowerTab('history')"
+              style="flex:1;padding:12px 0;border:none;background:none;font-size:0.9rem;color:#718096;border-bottom:2.5px solid transparent;cursor:pointer;">变更记录</button>
+      <button id="flowerTab_redemptions" onclick="switchFlowerTab('redemptions')"
+              style="flex:1;padding:12px 0;border:none;background:none;font-size:0.9rem;color:#718096;border-bottom:2.5px solid transparent;cursor:pointer;">兑换申请</button>
+    </div>
+    <!-- 内容区（填满剩余高度，各 Tab 独立滚动） -->
+    <div style="flex:1;overflow:hidden;position:relative;">
+      <!-- 兑换面板 -->
+      <div id="flowerPanel_redeem" style="position:absolute;inset:0;overflow-y:auto;padding:16px;">
+        <div id="flowerItemList" style="display:flex;flex-direction:column;gap:12px;">
+          <div style="text-align:center;color:#a0aec0;padding:30px;">加载中...</div>
+        </div>
+      </div>
+      <!-- 变更记录面板 -->
+      <div id="flowerPanel_history" style="display:none;position:absolute;inset:0;overflow-y:auto;padding:16px;">
+        <div id="flowerRecordList"></div>
+      </div>
+      <!-- 兑换申请面板 -->
+      <div id="flowerPanel_redemptions" style="display:none;position:absolute;inset:0;overflow-y:auto;padding:16px;">
+        <div id="flowerRedemptionList"></div>
+      </div>
+      <!-- 数量选择子面板（覆盖在内容区上） -->
+      <div id="redeemPanel" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.35);align-items:flex-end;z-index:10;">
+        <div style="width:100%;background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 30px;">
+          <div style="font-size:1rem;font-weight:700;color:#2d3748;margin-bottom:16px;">
+            🌸 兑换数量 — <span id="redeemItemName"></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#718096;margin-bottom:14px;">
+            <span>每次消耗：<strong style="color:#ff758c;" id="redeemCostPerUnit"></strong> 朵</span>
+            <span>每次时长：<strong style="color:#38a169;" id="redeemTimePerUnit"></strong></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <button onclick="var v=document.getElementById('redeemQtyInput');v.value=Math.max(1,parseInt(v.value)-1);calcRedeemSummary();"
+                    style="width:40px;height:40px;border-radius:50%;border:2px solid #fed7e2;background:#fff5f7;font-size:1.3rem;color:#ff758c;cursor:pointer;font-weight:bold;">−</button>
+            <input id="redeemQtyInput" type="number" min="1" value="1" oninput="calcRedeemSummary()"
+                   style="flex:1;height:44px;text-align:center;font-size:1.4rem;font-weight:700;border:2px solid #fed7e2;border-radius:12px;color:#2d3748;">
+            <button onclick="var v=document.getElementById('redeemQtyInput');v.value=Math.min(parseInt(v.max)||99,parseInt(v.value)+1);calcRedeemSummary();"
+                    style="width:40px;height:40px;border-radius:50%;border:2px solid #fed7e2;background:#fff5f7;font-size:1.3rem;color:#ff758c;cursor:pointer;font-weight:bold;">+</button>
+          </div>
+          <div style="font-size:0.78rem;color:#a0aec0;text-align:center;margin-bottom:16px;" id="redeemLimitHint"></div>
+          <div style="background:#fff5f7;border-radius:10px;padding:10px 14px;text-align:center;margin-bottom:18px;font-size:0.9rem;" id="redeemSummaryText"></div>
+          <div style="display:flex;gap:10px;">
+            <button onclick="closeRedeemPanel()"
+                    style="flex:1;height:46px;border-radius:23px;border:1.5px solid #fed7e2;background:#fff;color:#ff758c;font-size:0.95rem;cursor:pointer;">取消</button>
+            <button onclick="doFlowerRedeem()"
+                    style="flex:2;height:46px;border-radius:23px;border:none;background:linear-gradient(135deg,#ff758c,#ff7eb3);color:#fff;font-size:0.95rem;font-weight:700;cursor:pointer;">确认兑换</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- 内容区 -->
+    </div><!-- 面板主体 max-width -->
+  </div><!-- bottom flex wrapper -->
+</div><!-- flowerModal -->
+
+<script>
+var flowerBalance = 0;
+var currentFlowerTab = 'redeem';
+
+function openFlowerModal() {
+    document.getElementById('flowerModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    loadFlowerInfo();
+}
+function closeFlowerModal() {
+    document.getElementById('flowerModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+function switchFlowerTab(tab) {
+    currentFlowerTab = tab;
+    ['redeem','history','redemptions'].forEach(function(t) {
+        var panel = document.getElementById('flowerPanel_' + t);
+        panel.style.display = (t === tab) ? 'block' : 'none';
+        var btn = document.getElementById('flowerTab_' + t);
+        btn.style.color = t === tab ? '#ff758c' : '#718096';
+        btn.style.borderBottom = t === tab ? '2.5px solid #ff758c' : '2.5px solid transparent';
+    });
+    if (tab === 'history') loadFlowerRecords();
+    if (tab === 'redemptions') loadMyRedemptions();
+}
+function loadFlowerInfo() {
+    fetch('/flower/info')
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            if (!data.success) return;
+            flowerBalance = data.balance || 0;
+            document.getElementById('flowerBalanceDisplay').textContent = flowerBalance;
+            document.getElementById('flowerCountBadge').textContent = flowerBalance + ' 朵';
+            renderFlowerItems(data.items || []);
+        });
+}
+function renderFlowerItems(items) {
+    var container = document.getElementById('flowerItemList');
+    if (!items || items.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:30px;">暂未配置兑换项目，联系家长添加 🌸</div>';
+        return;
+    }
+    container.innerHTML = items.map(function(item) {
+        var canRedeem = flowerBalance >= item.flowerCost;
+        var timeStr = item.timeMinutes ? '（' + item.timeMinutes + ' 分钟/次）' : '';
+        var limitStr = item.dailyLimit ? '每日上限 ' + item.dailyLimit + ' 朵' : '不限';
+        return '<div style="background:#fff5f7;border:1.5px solid #fed7e2;border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-size:0.98rem;font-weight:700;color:#2d3748;">' + item.name + timeStr + '</div>' +
+            '<div style="font-size:0.78rem;color:#a0aec0;margin-top:3px;">' + limitStr +
+              (item.description ? ' · ' + item.description : '') + '</div>' +
+          '</div>' +
+          '<div style="text-align:right;flex-shrink:0;margin-left:12px;">' +
+            '<div style="font-size:1.05rem;font-weight:900;color:#ff758c;white-space:nowrap;">🌸×' + item.flowerCost + '/次</div>' +
+            '<button onclick="openRedeemPanel(' + JSON.stringify(item).replace(/"/g,'&quot;') + ')"' +
+              ' style="margin-top:6px;padding:6px 14px;border-radius:20px;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;' +
+              (canRedeem ? 'background:linear-gradient(135deg,#ff758c,#ff7eb3);color:#fff;' : 'background:#e2e8f0;color:#a0aec0;cursor:not-allowed;') + '"' +
+              (canRedeem ? '' : ' disabled') + '>兑换</button>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+}
+
+// 当前选中兑换项目
+var _redeemItem = null;
+function openRedeemPanel(item) {
+    _redeemItem = item;
+    var maxQty = item.dailyLimit ? item.dailyLimit : 99;
+    // 按余额限制最大数量
+    var maxByBalance = item.flowerCost > 0 ? Math.floor(flowerBalance / item.flowerCost) : 99;
+    maxQty = Math.min(maxQty, maxByBalance);
+    if (maxQty <= 0) { showMessage('小红花不足 🌸', 'error'); return; }
+
+    document.getElementById('redeemItemName').textContent = item.name;
+    document.getElementById('redeemCostPerUnit').textContent = item.flowerCost;
+    document.getElementById('redeemTimePerUnit').textContent = item.timeMinutes ? item.timeMinutes + ' 分钟' : '-';
+    document.getElementById('redeemQtyInput').max = maxQty;
+    document.getElementById('redeemQtyInput').value = 1;
+    document.getElementById('redeemLimitHint').textContent = '最多可兑 ' + maxQty + ' 次';
+    calcRedeemSummary();
+    document.getElementById('redeemPanel').style.display = 'flex';
+}
+function closeRedeemPanel() {
+    document.getElementById('redeemPanel').style.display = 'none';
+}
+function calcRedeemSummary() {
+    if (!_redeemItem) return;
+    var qty = parseInt(document.getElementById('redeemQtyInput').value);
+    if (isNaN(qty) || qty < 1) { document.getElementById('redeemSummaryText').innerHTML = '<span style="color:#e53e3e;">数量至少为 1</span>'; return; }
+    var totalCost = _redeemItem.flowerCost * qty;
+    var totalTime = _redeemItem.timeMinutes ? _redeemItem.timeMinutes * qty : null;
+    document.getElementById('redeemSummaryText').innerHTML =
+        '消耗 <strong style="color:#ff758c;">🌸×' + totalCost + '</strong>' +
+        (totalTime ? '，获得 <strong style="color:#38a169;">' + totalTime + ' 分钟</strong>' : '');
+}
+function doFlowerRedeem() {
+    if (!_redeemItem) return;
+    var qty = parseInt(document.getElementById('redeemQtyInput').value);
+    if (isNaN(qty) || qty < 1) { showMessage('兑换数量至少为 1', 'error'); return; }
+    var totalCost = _redeemItem.flowerCost * qty;
+    if (flowerBalance < totalCost) { showMessage('小红花不足 🌸', 'error'); return; }
+    var fd = new FormData();
+    fd.append('itemId', _redeemItem.id);
+    fd.append('qty', qty);
+    fetch('/flower/redeem', { method:'POST', body: fd })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            if (data.success) {
+                flowerBalance = data.newBalance || 0;
+                document.getElementById('flowerBalanceDisplay').textContent = flowerBalance;
+                document.getElementById('flowerCountBadge').textContent = flowerBalance + ' 朵';
+                closeRedeemPanel();
+                loadFlowerInfo();
+                showMessage(data.message, 'success');
+            } else {
+                showMessage(data.message || '兑换失败', 'error');
+            }
+        })
+        .catch(function(){ showMessage('网络错误', 'error'); });
+}
+function loadFlowerRecords() {
+    fetch('/flower/records')
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            var container = document.getElementById('flowerRecordList');
+            if (!data.success || !data.records || data.records.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:30px;">暂无变更记录</div>';
+                return;
+            }
+            var typeLabel = {1:'🎰抽奖获得', 2:'🌸兑换消耗', 3:'👨‍👩‍👧家长调整', 4:'↩️撤销退还'};
+            container.innerHTML = data.records.map(function(r){
+                var sign = r.changeAmount > 0 ? '+' : '';
+                var color = r.changeAmount > 0 ? '#38a169' : '#e53e3e';
+                var d = r.operateTime ? new Date(r.operateTime).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'}) : '';
+                return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f7fafc;">' +
+                  '<div>' +
+                    '<div style="font-size:0.88rem;color:#4a5568;">' + (typeLabel[r.type] || '变更') + '</div>' +
+                    '<div style="font-size:0.75rem;color:#a0aec0;">' + (r.remark || '') + '  ' + d + '</div>' +
+                  '</div>' +
+                  '<div style="text-align:right;">' +
+                    '<div style="font-size:1rem;font-weight:700;color:' + color + ';">' + sign + r.changeAmount + ' 朵</div>' +
+                    '<div style="font-size:0.75rem;color:#a0aec0;">余 ' + r.balance + '</div>' +
+                  '</div>' +
+                '</div>';
+            }).join('');
+        });
+}
+function loadMyRedemptions() {
+    fetch('/flower/myRedemptions')
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            var container = document.getElementById('flowerRedemptionList');
+            if (!data.success || !data.redemptions || data.redemptions.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:30px;">暂无兑换申请记录</div>';
+                return;
+            }
+            var statusLabel = {0:'⏳待审批', 1:'✅已审批', 2:'❌已撤销'};
+            var statusColor = {0:'#d69e2e', 1:'#38a169', 2:'#a0aec0'};
+            container.innerHTML = data.redemptions.map(function(r){
+                var d = r.redeemTime ? new Date(r.redeemTime).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'}) : '';
+                var timeStr = r.timeMinutes ? '（' + r.timeMinutes + ' 分钟）' : '';
+                return '<div style="background:#fff5f7;border-radius:12px;padding:12px 14px;margin-bottom:10px;">' +
+                  '<div style="display:flex;justify-content:space-between;">' +
+                    '<div style="font-weight:600;color:#2d3748;">' + r.itemName + timeStr + '</div>' +
+                    '<div style="font-size:0.82rem;font-weight:700;color:' + (statusColor[r.status]||'#718096') + ';">' + (statusLabel[r.status]||'') + '</div>' +
+                  '</div>' +
+                  '<div style="font-size:0.78rem;color:#a0aec0;margin-top:4px;">消耗 🌸×' + r.flowerCost + '  · ' + d + '</div>' +
+                '</div>';
+            }).join('');
+        });
+}
+// 抽奖中奖小红花时刷新显示
+function updateFlowerBadge(newBalance) {
+    flowerBalance = newBalance;
+    document.getElementById('flowerCountBadge').textContent = flowerBalance + ' 朵';
+    if (document.getElementById('flowerBalanceDisplay')) {
+        document.getElementById('flowerBalanceDisplay').textContent = flowerBalance;
+    }
+}
+// 关闭背景点击
+document.getElementById('flowerModal').addEventListener('click', function(e){
+    if (e.target === this) closeFlowerModal();
+});
+// 页面初始化时加载小红花余量
+(function initFlowerBadge(){
+    fetch('/flower/info')
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            if (data.success) {
+                flowerBalance = data.balance || 0;
+                document.getElementById('flowerCountBadge').textContent = flowerBalance + ' 朵';
+            }
+        }).catch(function(){});
+})();
+</script>
 </body>
 </html>

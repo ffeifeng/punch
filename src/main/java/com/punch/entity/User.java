@@ -19,6 +19,7 @@ public class User {
     private Integer totalPoints;
     private String qrCode;  // 学生二维码标识
     private Integer lotteryCount;  // 剩余抽奖次数
+    private Integer flowerCount;   // 小红花余量
     private Long createBy;
     private Date createTime;
     private Long updateBy;

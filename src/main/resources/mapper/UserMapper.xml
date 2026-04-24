@@ -16,6 +16,7 @@
         <result property="totalPoints" column="total_points" />
         <result property="qrCode" column="qr_code" />
         <result property="lotteryCount" column="lottery_count" />
+        <result property="flowerCount"  column="flower_count" />
         <result property="createBy" column="create_by" />
         <result property="createTime" column="create_time" />
         <result property="updateBy" column="update_by" />
@@ -51,6 +52,7 @@
             <if test="totalPoints != null">total_points,</if>
             <if test="qrCode != null">qr_code,</if>
             <if test="lotteryCount != null">lottery_count,</if>
+            <if test="flowerCount != null">flower_count,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
             <if test="updateBy != null">update_by,</if>
@@ -71,6 +73,7 @@
             <if test="totalPoints != null">#{totalPoints},</if>
             <if test="qrCode != null">#{qrCode},</if>
             <if test="lotteryCount != null">#{lotteryCount},</if>
+            <if test="flowerCount != null">#{flowerCount},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="updateBy != null">#{updateBy},</if>
@@ -93,6 +96,7 @@
             <if test="totalPoints != null">total_points=#{totalPoints},</if>
             <if test="qrCode != null">qr_code=#{qrCode},</if>
             <if test="lotteryCount != null">lottery_count=#{lotteryCount},</if>
+            <if test="flowerCount != null">flower_count=#{flowerCount},</if>
             <if test="createBy != null">create_by=#{createBy},</if>
             <if test="createTime != null">create_time=#{createTime},</if>
             <if test="updateBy != null">update_by=#{updateBy},</if>

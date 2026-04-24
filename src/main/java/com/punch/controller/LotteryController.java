@@ -115,6 +115,62 @@ public class LotteryController {
         return result;
     }
 
+    @PostMapping("/record/toggleRedeem")
+    @ResponseBody
+    public Map<String, Object> toggleRedeem(@RequestParam Long id,
+                                             @RequestParam int isRedeemed,
+                                             HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User user = (User) session.getAttribute("user");
+        if (user == null) { result.put("success", false); return result; }
+        int rows = isRedeemed == 1
+                ? lotteryRecordService.redeem(id, user.getId())
+                : lotteryRecordService.cancelRedeem(id);
+        result.put("success", rows > 0);
+        return result;
+    }
+
+    /** 批量兑奖：按奖品ID列表批量标记为已兑奖 */
+    @PostMapping("/record/batchRedeem")
+    @ResponseBody
+    public Map<String, Object> batchRedeem(@RequestBody java.util.Map<String, Object> body,
+                                            HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User user = (User) session.getAttribute("user");
+        if (user == null) { result.put("success", false); return result; }
+        Long parentId = resolveParentId(user);
+        @SuppressWarnings("unchecked")
+        java.util.List<Object> rawIds = (java.util.List<Object>) body.get("itemIds");
+        Object sidObj = body.get("studentId");
+        Long studentId = sidObj != null && !sidObj.toString().isEmpty()
+                ? Long.parseLong(sidObj.toString()) : null;
+        if (rawIds == null || rawIds.isEmpty()) {
+            result.put("success", false); result.put("message", "请选择奖品类型"); return result;
+        }
+        java.util.List<Long> itemIds = rawIds.stream()
+                .map(o -> Long.parseLong(o.toString()))
+                .collect(java.util.stream.Collectors.toList());
+        int count = lotteryRecordService.batchRedeem(parentId, studentId, itemIds, user.getId());
+        result.put("success", true);
+        result.put("count", count);
+        result.put("message", "批量兑奖完成，共处理 " + count + " 条记录");
+        return result;
+    }
+
+    /** 查询未兑奖记录按奖品分组统计（用于批量兑奖弹窗） */
+    @GetMapping("/record/unredeemedSummary")
+    @ResponseBody
+    public Map<String, Object> unredeemedSummary(@RequestParam(required = false) Long studentId,
+                                                   HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        User user = (User) session.getAttribute("user");
+        if (user == null) { result.put("success", false); return result; }
+        Long parentId = resolveParentId(user);
+        result.put("success", true);
+        result.put("list", lotteryRecordService.countUnredeemedGroupByItem(parentId, studentId));
+        return result;
+    }
+
     // ==================== 工具方法 ====================
 
     private Long resolveParentId(User user) {

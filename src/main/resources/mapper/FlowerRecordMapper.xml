@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.FlowerRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.punch.entity.FlowerRecord">
+        <id  property="id"           column="id"/>
+        <result property="studentId"    column="student_id"/>
+        <result property="changeAmount" column="change_amount"/>
+        <result property="balance"      column="balance"/>
+        <result property="type"         column="type"/>
+        <result property="sourceId"     column="source_id"/>
+        <result property="remark"       column="remark"/>
+        <result property="operatorId"   column="operator_id"/>
+        <result property="operateTime"  column="operate_time"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.punch.entity.FlowerRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO flower_record (student_id, change_amount, balance, type, source_id, remark, operator_id, operate_time)
+        VALUES (#{studentId}, #{changeAmount}, #{balance}, #{type}, #{sourceId, jdbcType=BIGINT},
+                #{remark}, #{operatorId}, #{operateTime})
+    </insert>
+
+    <select id="selectByStudentId" resultMap="BaseResultMap">
+        SELECT * FROM flower_record WHERE student_id = #{studentId} ORDER BY operate_time DESC
+    </select>
+
+    <select id="selectLatestByStudentId" resultMap="BaseResultMap">
+        SELECT * FROM flower_record WHERE student_id = #{studentId} ORDER BY operate_time DESC, id DESC LIMIT 1
+    </select>
+
+    <update id="updateSourceId">
+        UPDATE flower_record SET source_id = #{sourceId} WHERE id = #{id}
+    </update>
+
+</mapper>

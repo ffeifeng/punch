@@ -16,6 +16,11 @@ public class LotteryItem {
      * 每个保底奖品可独立设置不同阈值（如A奖品10次保底、B奖品20次保底）。
      */
     private Integer pityThreshold;
+    /**
+     * 抽中此奖品时自动赠送的小红花数量，0=不赠送。
+     * 例：设置为 3，孩子抽中后立即获得 3 朵小红花。
+     */
+    private Integer flowerReward;
     private Date createTime;
     private Date updateTime;
 }

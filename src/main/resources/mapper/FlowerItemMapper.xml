@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.FlowerItemMapper">
+
+    <resultMap id="BaseResultMap" type="com.punch.entity.FlowerItem">
+        <id  property="id"          column="id"/>
+        <result property="parentId"     column="parent_id"/>
+        <result property="name"         column="name"/>
+        <result property="description"  column="description"/>
+        <result property="flowerCost"   column="flower_cost"/>
+        <result property="timeMinutes"  column="time_minutes"/>
+        <result property="dailyLimit"   column="daily_limit"/>
+        <result property="status"       column="status"/>
+        <result property="sortOrder"    column="sort_order"/>
+        <result property="createTime"   column="create_time"/>
+        <result property="updateTime"   column="update_time"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM flower_item WHERE id = #{id}
+    </select>
+
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT * FROM flower_item WHERE parent_id = #{parentId} ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <select id="selectEnabledByParentId" resultMap="BaseResultMap">
+        SELECT * FROM flower_item WHERE parent_id = #{parentId} AND status = 1 ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <insert id="insert" parameterType="com.punch.entity.FlowerItem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO flower_item (parent_id, name, description, flower_cost, time_minutes, daily_limit, status, sort_order, create_time, update_time)
+        VALUES (#{parentId}, #{name}, #{description}, #{flowerCost}, #{timeMinutes, jdbcType=INTEGER},
+                #{dailyLimit, jdbcType=INTEGER}, #{status}, #{sortOrder}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="update" parameterType="com.punch.entity.FlowerItem">
+        UPDATE flower_item
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="flowerCost != null">flower_cost = #{flowerCost},</if>
+            time_minutes = #{timeMinutes, jdbcType=INTEGER},
+            daily_limit  = #{dailyLimit,  jdbcType=INTEGER},
+            <if test="status != null">status = #{status},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM flower_item WHERE id = #{id}
+    </delete>
+
+</mapper>

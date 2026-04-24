@@ -9,6 +9,7 @@
         <result property="probability"   column="probability"/>
         <result property="status"        column="status"/>
         <result property="pityThreshold" column="pity_threshold"/>
+        <result property="flowerReward"  column="flower_reward"/>
         <result property="createTime"    column="create_time"/>
         <result property="updateTime"    column="update_time"/>
     </resultMap>
@@ -36,8 +37,8 @@
     </select>
 
     <insert id="insert" parameterType="com.punch.entity.LotteryItem" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO lottery_item (parent_id, name, probability, status, pity_threshold, create_time, update_time)
-        VALUES (#{parentId}, #{name}, #{probability}, #{status}, #{pityThreshold, jdbcType=INTEGER}, #{createTime}, #{updateTime})
+        INSERT INTO lottery_item (parent_id, name, probability, status, pity_threshold, flower_reward, create_time, update_time)
+        VALUES (#{parentId}, #{name}, #{probability}, #{status}, #{pityThreshold, jdbcType=INTEGER}, #{flowerReward}, #{createTime}, #{updateTime})
     </insert>
 
     <update id="update" parameterType="com.punch.entity.LotteryItem">
@@ -47,6 +48,7 @@
             <if test="probability != null">probability = #{probability},</if>
             <if test="status != null">status = #{status},</if>
             pity_threshold = #{pityThreshold, jdbcType=INTEGER},
+            <if test="flowerReward != null">flower_reward = #{flowerReward},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
         </set>
         WHERE id = #{id}

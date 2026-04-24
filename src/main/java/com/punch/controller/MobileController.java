@@ -46,6 +46,9 @@ public class MobileController {
 
     @Autowired
     private com.punch.mapper.UserPityCountMapper userPityCountMapper;
+
+    @Autowired
+    private com.punch.service.FlowerRecordService flowerRecordService;
     
     /**
      * 移动端登录页面
@@ -324,10 +327,26 @@ public class MobileController {
         record.setItemName(won.getName());
         lotteryRecordService.create(record);
 
+        // ========== 小红花联动 ==========
+        int flowerRewarded = 0;
+        if (won.getFlowerReward() != null && won.getFlowerReward() > 0) {
+            flowerRecordService.addFlowers(
+                    student.getId(), won.getFlowerReward(), 1,
+                    student.getId(),
+                    "抽奖获得「" + won.getName() + "」赠送小红花",
+                    record.getId());
+            flowerRewarded = won.getFlowerReward();
+        }
+        // ========== 小红花联动结束 ==========
+
         result.put("success", true);
         result.put("prize", won.getName());
         result.put("remainingCount", remaining - 1);
         result.put("pityTriggered", pityTriggered);
+        if (flowerRewarded > 0) {
+            result.put("flowerRewarded", flowerRewarded);
+            result.put("flowerBalance", flowerRecordService.getCurrentBalance(student.getId()));
+        }
         return result;
     }
 

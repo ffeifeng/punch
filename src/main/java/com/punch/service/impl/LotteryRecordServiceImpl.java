@@ -51,4 +51,35 @@ public class LotteryRecordServiceImpl implements LotteryRecordService {
         record.setRedeemedBy(operatorId);
         return lotteryRecordMapper.update(record);
     }
+
+    @Override
+    public int cancelRedeem(Long id) {
+        LotteryRecord record = lotteryRecordMapper.selectById(id);
+        if (record == null) return 0;
+        record.setIsRedeemed(0);
+        record.setRedeemedTime(null);
+        record.setRedeemedBy(null);
+        return lotteryRecordMapper.update(record);
+    }
+
+    @Override
+    public int batchRedeem(Long parentId, Long studentId, List<Long> itemIds, Long operatorId) {
+        List<LotteryRecord> records = lotteryRecordMapper.selectUnredeemedByItemIds(parentId, studentId, itemIds);
+        if (records == null || records.isEmpty()) return 0;
+        Date now = new Date();
+        int count = 0;
+        for (LotteryRecord r : records) {
+            r.setIsRedeemed(1);
+            r.setRedeemedTime(now);
+            r.setRedeemedBy(operatorId);
+            lotteryRecordMapper.update(r);
+            count++;
+        }
+        return count;
+    }
+
+    @Override
+    public List<java.util.Map<String, Object>> countUnredeemedGroupByItem(Long parentId, Long studentId) {
+        return lotteryRecordMapper.countUnredeemedGroupByItem(parentId, studentId);
+    }
 }

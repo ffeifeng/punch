@@ -347,6 +347,20 @@
                         <% } %>
                     </div>
                 </div>
+
+                <%-- 小红花系统模块 --%>
+                <% if ("admin".equals(role) || "parent".equals(role)) { %>
+                <div title="🌸  小红花系统" data-options="iconCls:'icon-ok'">
+                    <div class="menu-panel">
+                        <a href="javascript:void(0)" class="menu-item" onclick="openTab('兑换项目管理','/flower/item/page')">
+                            🛍️ 兑换项目管理
+                        </a>
+                        <a href="javascript:void(0)" class="menu-item" onclick="openTab('兑换申请审批','/flower/redemption/page')">
+                            ✅ 兑换申请审批
+                        </a>
+                    </div>
+                </div>
+                <% } %>
                 
             </div>
         </div>

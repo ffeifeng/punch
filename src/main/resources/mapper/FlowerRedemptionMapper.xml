@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.punch.mapper.FlowerRedemptionMapper">
+
+    <resultMap id="BaseResultMap" type="com.punch.entity.FlowerRedemption">
+        <id  property="id"          column="id"/>
+        <result property="studentId"    column="student_id"/>
+        <result property="itemId"       column="item_id"/>
+        <result property="itemName"     column="item_name"/>
+        <result property="flowerCost"   column="flower_cost"/>
+        <result property="qty"          column="qty"/>
+        <result property="timeMinutes"  column="time_minutes"/>
+        <result property="status"       column="status"/>
+        <result property="redeemDate"   column="redeem_date"/>
+        <result property="redeemTime"   column="redeem_time"/>
+        <result property="confirmTime"  column="confirm_time"/>
+        <result property="confirmBy"    column="confirm_by"/>
+        <result property="remark"       column="remark"/>
+        <result property="createTime"   column="create_time"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.punch.entity.FlowerRedemption" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO flower_redemption
+            (student_id, item_id, item_name, flower_cost, qty, time_minutes, status,
+             redeem_date, redeem_time, remark, create_time)
+        VALUES
+            (#{studentId}, #{itemId}, #{itemName}, #{flowerCost}, #{qty},
+             #{timeMinutes, jdbcType=INTEGER}, #{status},
+             #{redeemDate}, #{redeemTime}, #{remark, jdbcType=VARCHAR}, #{createTime})
+    </insert>
+
+    <update id="update" parameterType="com.punch.entity.FlowerRedemption">
+        UPDATE flower_redemption
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="confirmTime != null">confirm_time = #{confirmTime},</if>
+            <if test="confirmBy != null">confirm_by = #{confirmBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM flower_redemption WHERE id = #{id}
+    </select>
+
+    <select id="selectByStudentId" resultMap="BaseResultMap">
+        SELECT * FROM flower_redemption WHERE student_id = #{studentId} ORDER BY redeem_time DESC
+    </select>
+
+    <select id="selectPendingByParentId" resultMap="BaseResultMap">
+        SELECT fr.* FROM flower_redemption fr
+        INNER JOIN user u ON u.id = fr.student_id
+        WHERE u.parent_id = #{parentId} AND fr.status = 0
+        ORDER BY fr.redeem_time DESC
+    </select>
+
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT fr.* FROM flower_redemption fr
+        INNER JOIN user u ON u.id = fr.student_id
+        WHERE u.parent_id = #{parentId}
+        <if test="status != null">AND fr.status = #{status}</if>
+        ORDER BY fr.redeem_time DESC
+    </select>
+
+    <select id="countTodayByStudentAndItem" resultType="int">
+        SELECT COALESCE(SUM(qty), 0) FROM flower_redemption
+        WHERE student_id = #{studentId}
+          AND item_id    = #{itemId}
+          AND redeem_date = #{today}
+          AND status != 2
+    </select>
+
+</mapper>

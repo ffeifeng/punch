@@ -41,7 +41,8 @@
             <th data-options="field:'status',width:60,formatter:formatStatus">状态</th>
             <th data-options="field:'registerTime',width:120">注册时间</th>
             <th data-options="field:'lotteryCount',width:80,formatter:formatLotteryCount">抽奖次数</th>
-            <th data-options="field:'operation',width:200,formatter:formatOp">操作</th>
+            <th data-options="field:'flowerCount',width:90,formatter:formatFlowerCount">小红花</th>
+            <th data-options="field:'operation',width:230,formatter:formatOp">操作</th>
         </tr>
         </thead>
     </table>
@@ -268,6 +269,47 @@ function setLotteryCount(studentId, current) {
         }]
     });
 }
+function formatFlowerCount(val) {
+    if (val == null || val === '') return '<span style="color:#a0aec0;">-</span>';
+    return '<span style="color:#ff758c;font-weight:bold;">🌸 ' + val + ' 朵</span>';
+}
+function adjustFlower(studentId, studentName, current) {
+    $('#flowerStudentId').val(studentId);
+    $('#flowerCurrentVal').val(current);
+    $('#flowerCurrentDisplay').text(current);
+    $('#flowerStudentNameDisplay').text(studentName);
+    $('#flowerDelta').val(1);
+    $('#flowerOp').val('add');
+    $('#flowerRemark').val('');
+    $('#flowerPreview').html('');
+    $('#flowerDlg').dialog('open').dialog('setTitle', '🌸 小红花管理 - ' + studentName);
+}
+function calcFlowerPreview() {
+    var op = $('#flowerOp').val();
+    var current = parseInt($('#flowerCurrentVal').val()) || 0;
+    var delta = parseInt($('#flowerDelta').val()) || 0;
+    var result = op === 'add' ? current + delta : current - delta;
+    var color = result < 0 ? '#e53e3e' : '#38a169';
+    $('#flowerPreview').html('调整后余量：<strong style="color:' + color + ';">' + result + ' 朵</strong>'
+        + (result < 0 ? '&nbsp;<span style="color:#e53e3e;">（余量不足）</span>' : ''));
+}
+function confirmFlowerAdjust() {
+    var studentId = $('#flowerStudentId').val();
+    var op = $('#flowerOp').val();
+    var delta = parseInt($('#flowerDelta').val()) || 0;
+    var remark = $.trim($('#flowerRemark').val());
+    if (delta <= 0) { $.messager.alert('提示', '请输入大于0的数量', 'warning'); return; }
+    var finalDelta = op === 'add' ? delta : -delta;
+    $.post('/flower/manage/adjust', { studentId: studentId, delta: finalDelta, remark: remark }, function(res) {
+        if (res.success) {
+            $('#flowerDlg').dialog('close');
+            $.messager.show({ title: '成功', msg: res.message, showType: 'slide', timeout: 2000 });
+            $('#userTable').datagrid('reload');
+        } else {
+            $.messager.alert('失败', res.message || '操作失败', 'error');
+        }
+    }, 'json');
+}
 function formatStatus(val) {
     if(val==1) return '<span style="color:green">启用</span>';
     if(val==0) return '<span style="color:red">禁用</span>';
@@ -305,6 +347,7 @@ function formatOp(val,row) {
         if (row.parentId != null) {
             ops += ' <a href="javascript:void(0)" onclick="showQrCode('+row.id+')">二维码</a>';
             ops += ' <a href="javascript:void(0)" onclick="setLotteryCount('+row.id+','+(row.lotteryCount||0)+')" style="color:#319795;">🎰抽奖次数</a>';
+            ops += ' <a href="javascript:void(0)" onclick="adjustFlower('+row.id+',\''+(row.realName||row.username)+'\','+(row.flowerCount||0)+')" style="color:#ff758c;">🌸小红花</a>';
         }
     }
     
@@ -686,6 +729,42 @@ function copyQrCodeUrl() {
             <li>重新生成会使原二维码失效</li>
         </ul>
     </div>
+</div>
+
+<!-- 小红花调整对话框 -->
+<div id="flowerDlg" class="easyui-dialog" style="width:400px;" closed="true"
+     data-options="modal:true,resizable:false,buttons:'#flowerDlgBtns'">
+    <div style="padding:16px 20px;">
+        <input type="hidden" id="flowerStudentId">
+        <input type="hidden" id="flowerCurrentVal">
+        <div style="margin-bottom:14px;color:#4a5568;">
+            当前「<strong id="flowerStudentNameDisplay"></strong>」小红花余量：
+            <strong style="color:#ff758c;" id="flowerCurrentDisplay">0</strong> 朵
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <label style="color:#4a5568;font-size:0.9rem;white-space:nowrap;">操作：</label>
+            <select id="flowerOp" onchange="calcFlowerPreview()"
+                    style="height:32px;padding:0 8px;border:1px solid #d2d6dc;border-radius:4px;">
+                <option value="add">增加 🌸</option>
+                <option value="sub">减少</option>
+            </select>
+            <input id="flowerDelta" type="number" min="1" value="1" oninput="calcFlowerPreview()"
+                   style="width:80px;height:32px;padding:0 8px;border:1px solid #d2d6dc;border-radius:4px;">
+            <span style="color:#4a5568;font-size:0.9rem;">朵</span>
+        </div>
+        <div style="margin-bottom:14px;">
+            <label style="display:block;margin-bottom:6px;color:#4a5568;font-size:0.9rem;">备注（可选）：</label>
+            <input id="flowerRemark" type="text" placeholder="如：奖励认真学习"
+                   style="width:100%;height:32px;padding:0 8px;border:1px solid #d2d6dc;border-radius:4px;box-sizing:border-box;">
+        </div>
+        <div id="flowerPreview" style="font-size:0.88rem;color:#718096;min-height:20px;"></div>
+    </div>
+</div>
+<div id="flowerDlgBtns" style="text-align:center;">
+    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save'"
+       style="width:70px;margin-right:8px;" onclick="confirmFlowerAdjust()">确认</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'"
+       style="width:70px;" onclick="$('#flowerDlg').dialog('close')">取消</a>
 </div>
 
 </body>

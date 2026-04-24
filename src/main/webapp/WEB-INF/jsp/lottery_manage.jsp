@@ -31,6 +31,7 @@
             <th data-options="field:'name',width:150">奖品名称</th>
             <th data-options="field:'probability',width:100,formatter:formatProb">概率(%)</th>
             <th data-options="field:'pityThreshold',width:110,formatter:formatPityThreshold">保底阈值</th>
+            <th data-options="field:'flowerReward',width:100,formatter:formatFlowerReward">小红花奖励</th>
             <th data-options="field:'status',width:80,formatter:formatStatus">状态</th>
             <th data-options="field:'createTime',width:130">创建时间</th>
             <th data-options="field:'operation',width:180,formatter:formatOp">操作</th>
@@ -54,13 +55,17 @@
             <input name="probability" class="easyui-numberbox" data-options="prompt:'请输入概率，如：30 表示30%',min:0.01,max:100,precision:2" style="width:100%;height:36px;">
         </div>
         <div style="margin-bottom:18px;">
-            <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;">🔘 状态</label>
+            <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;">🍀 保底阈值（次）</label>
             <select name="status" class="easyui-combobox"
                     data-options="editable:false,valueField:'value',textField:'label',data:[{value:1,label:'启用'},{value:0,label:'禁用'}]"
                     style="width:100%;height:36px;"></select>
         </div>
         <div style="margin-bottom:18px;">
-            <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;">🍀 保底阈值（次）</label>
+            <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;">🌸 小红花奖励（朵）</label>
+            <input name="flowerReward" type="number" min="0" value="0" placeholder="0"
+                   style="width:100%;height:36px;padding:0 10px;border:1px solid #d2d6dc;border-radius:4px;box-sizing:border-box;font-size:0.95rem;">
+            <div style="font-size:0.78rem;color:#a0aec0;margin-top:4px;">填 0 = 不赠送小红花；填正整数 = 抽中后自动赠送该数量小红花</div>
+        </div>
             <input name="pityThreshold" type="number" min="0" placeholder="留空或填0表示普通奖品"
                    style="width:100%;height:36px;padding:0 10px;border:1px solid #d2d6dc;border-radius:4px;box-sizing:border-box;font-size:0.95rem;">
             <div style="font-size:0.78rem;color:#a0aec0;margin-top:4px;">
@@ -93,6 +98,10 @@ function formatPityThreshold(val) {
     if (val == null || val === '' || val == 0) return '<span style="color:#a0aec0;">-</span>';
     return '<span style="color:#d69e2e;font-weight:bold;">🍀 ' + val + ' 次保底</span>';
 }
+function formatFlowerReward(val) {
+    if (!val || val == 0) return '<span style="color:#a0aec0;">-</span>';
+    return '<span style="color:#ff758c;font-weight:bold;">🌸×' + val + '</span>';
+}
 function formatStatus(val) {
     return val == 1
         ? '<span style="color:#38a169;font-weight:bold;">✅ 启用</span>'
@@ -107,6 +116,7 @@ function openAdd() {
     $('#fm').form('clear');
     $('select[name="status"]').combobox('setValue', 1);
     $('input[name="pityThreshold"]').val('');
+    $('input[name="flowerReward"]').val(0);
     $('#dlg').dialog('open').dialog('setTitle', '新增奖品');
 }
 function openEdit(id) {
@@ -116,6 +126,7 @@ function openEdit(id) {
         $('#fm').form('load', row);
         $('select[name="status"]').combobox('setValue', row.status);
         $('input[name="pityThreshold"]').val(row.pityThreshold || '');
+        $('input[name="flowerReward"]').val(row.flowerReward || 0);
         $('#dlg').dialog('open').dialog('setTitle', '编辑奖品');
     }
 }
