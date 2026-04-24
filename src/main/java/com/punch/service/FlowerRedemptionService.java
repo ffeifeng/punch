@@ -21,4 +21,7 @@ public interface FlowerRedemptionService {
     List<FlowerRedemption> getByStudentId(Long studentId);
     List<FlowerRedemption> getPendingByParentId(Long parentId);
     List<FlowerRedemption> getByParentId(Long parentId, Integer status);
+
+    /** 按 ID 查询单条兑换记录（用于归属校验） */
+    FlowerRedemption getRedemptionById(Long id);
 }

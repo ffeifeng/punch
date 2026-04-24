@@ -14,6 +14,7 @@ import com.punch.service.DailyCheckinService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
@@ -106,6 +107,7 @@ public class CheckinRecordServiceImpl implements CheckinRecordService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String doCheckin(Long studentId, Long itemId, Date date, Long operatorId, String clientIp) {
         // 检查是否已存在记录
         List<CheckinRecord> list = recordMapper.selectByCondition(studentId, itemId, date, null);
@@ -175,6 +177,7 @@ public class CheckinRecordServiceImpl implements CheckinRecordService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String cancelCheckin(Long recordId, Long operatorId) {
         CheckinRecord record = recordMapper.selectById(recordId);
         if (record == null || record.getStatus() != 1) return "fail";
@@ -205,6 +208,7 @@ public class CheckinRecordServiceImpl implements CheckinRecordService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String revokeTodayCheckin(Long studentId, Long itemId, Date date, Long operatorId, String clientIp) {
         // 查找今日的打卡记录
         List<CheckinRecord> list = recordMapper.selectByCondition(studentId, itemId, date, 1); // 只查找已打卡的记录
@@ -254,6 +258,7 @@ public class CheckinRecordServiceImpl implements CheckinRecordService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String supplementCheckin(Long studentId, Long itemId, Date date, Long operatorId) {
         // 检查是否已存在记录
         List<CheckinRecord> list = recordMapper.selectByCondition(studentId, itemId, date, null);

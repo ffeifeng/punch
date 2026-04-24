@@ -16,10 +16,16 @@ public class TestController {
     @GetMapping("/test")
     @ResponseBody
     public String test(HttpServletRequest request, HttpSession session) {
+        // 仅 admin 可访问，生产环境应删除此接口
+        Object user = session.getAttribute("user");
+        if (!(user instanceof com.punch.entity.User)
+                || !"admin".equals(((com.punch.entity.User) user).getUsername())) {
+            return "Access denied";
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("URI: ").append(request.getRequestURI()).append("\n");
         sb.append("Session ID: ").append(session.getId()).append("\n");
-        sb.append("User in session: ").append(session.getAttribute("user")).append("\n");
+        sb.append("User in session: ").append(user).append("\n");
         sb.append("Request Method: ").append(request.getMethod()).append("\n");
         return sb.toString();
     }

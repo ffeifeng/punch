@@ -1,12 +1,14 @@
 package com.punch.entity;
 
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 
 @Data
 public class User {
     private Long id;
     private String username;
+    @JsonIgnore
     private String password;
     private String realName;
     private String phone;

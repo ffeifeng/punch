@@ -7,6 +7,7 @@ import com.punch.mapper.UserMapper;
 import com.punch.service.FlowerRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
@@ -21,27 +22,33 @@ public class FlowerRecordServiceImpl implements FlowerRecordService {
     @Override
     public int getCurrentBalance(Long studentId) {
         if (studentId == null) return 0;
-        FlowerRecord latest = flowerRecordMapper.selectLatestByStudentId(studentId);
-        if (latest != null) return latest.getBalance();
         User user = userMapper.selectById(studentId);
         return (user != null && user.getFlowerCount() != null) ? user.getFlowerCount() : 0;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int addFlowers(Long studentId, int amount, int type, Long operatorId, String remark, Long sourceId) {
-        int newBalance = getCurrentBalance(studentId) + amount;
+        // FOR UPDATE 行锁，防止并发读到相同旧余额
+        User user = userMapper.selectByIdForUpdate(studentId);
+        if (user == null) throw new RuntimeException("用户不存在，ID: " + studentId);
+        int newBalance = (user.getFlowerCount() == null ? 0 : user.getFlowerCount()) + amount;
+        userMapper.updateFlowerCount(studentId, newBalance);
         insertRecord(studentId, amount, newBalance, type, operatorId, remark, sourceId);
-        syncUserField(studentId, newBalance);
         return newBalance;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int reduceFlowers(Long studentId, int amount, int type, Long operatorId, String remark, Long sourceId) {
-        int current = getCurrentBalance(studentId);
+        // FOR UPDATE 行锁
+        User user = userMapper.selectByIdForUpdate(studentId);
+        if (user == null) return -1;
+        int current = user.getFlowerCount() == null ? 0 : user.getFlowerCount();
         if (current < amount) return -1;
         int newBalance = current - amount;
+        userMapper.updateFlowerCount(studentId, newBalance);
         insertRecord(studentId, -amount, newBalance, type, operatorId, remark, sourceId);
-        syncUserField(studentId, newBalance);
         return newBalance;
     }
 
@@ -62,14 +69,5 @@ public class FlowerRecordServiceImpl implements FlowerRecordService {
         r.setSourceId(sourceId);
         r.setOperateTime(new Date());
         flowerRecordMapper.insert(r);
-    }
-
-    /** 将最新余额同步到 user 表的 flower_count 字段（用于快速展示） */
-    private void syncUserField(Long studentId, int balance) {
-        User user = userMapper.selectById(studentId);
-        if (user != null) {
-            user.setFlowerCount(balance);
-            userMapper.update(user);
-        }
     }
 }

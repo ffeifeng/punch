@@ -10,6 +10,7 @@ import com.punch.service.FlowerRecordService;
 import com.punch.service.FlowerRedemptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
@@ -21,6 +22,7 @@ public class FlowerRedemptionServiceImpl implements FlowerRedemptionService {
     @Autowired private FlowerRecordMapper     flowerRecordMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> redeem(Long studentId, Long itemId, int qty, Long operatorId) {
         Map<String, Object> result = new HashMap<>();
         if (qty < 1) {
@@ -103,6 +105,7 @@ public class FlowerRedemptionServiceImpl implements FlowerRedemptionService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> revoke(Long redemptionId, Long operatorId) {
         Map<String, Object> result = new HashMap<>();
         FlowerRedemption redemption = redemptionMapper.selectById(redemptionId);
@@ -132,5 +135,8 @@ public class FlowerRedemptionServiceImpl implements FlowerRedemptionService {
     }
     @Override public List<FlowerRedemption> getByParentId(Long parentId, Integer status) {
         return redemptionMapper.selectByParentId(parentId, status);
+    }
+    @Override public FlowerRedemption getRedemptionById(Long id) {
+        return redemptionMapper.selectById(id);
     }
 }

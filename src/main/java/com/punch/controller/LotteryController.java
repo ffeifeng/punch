@@ -6,6 +6,7 @@ import com.punch.entity.LotteryRecord;
 import com.punch.entity.User;
 import com.punch.service.LotteryItemService;
 import com.punch.service.LotteryRecordService;
+import com.punch.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,9 @@ public class LotteryController {
 
     @Autowired
     private LotteryRecordService lotteryRecordService;
+
+    @Autowired
+    private UserService userService;
 
     // ==================== 抽奖项管理 ====================
 
@@ -59,6 +63,10 @@ public class LotteryController {
         if (user == null) { result.put("success", false); result.put("message", "未登录"); return result; }
         LotteryItem existing = lotteryItemService.getById(item.getId());
         if (existing == null) { result.put("success", false); result.put("message", "记录不存在"); return result; }
+        Long parentId = resolveParentId(user);
+        if (parentId != null && !parentId.equals(existing.getParentId())) {
+            result.put("success", false); result.put("message", "无权操作"); return result;
+        }
         lotteryItemService.update(item);
         result.put("success", true);
         return result;
@@ -70,6 +78,12 @@ public class LotteryController {
         Map<String, Object> result = new HashMap<>();
         User user = (User) session.getAttribute("user");
         if (user == null) { result.put("success", false); result.put("message", "未登录"); return result; }
+        LotteryItem existing = lotteryItemService.getById(id);
+        if (existing == null) { result.put("success", false); result.put("message", "记录不存在"); return result; }
+        Long parentId = resolveParentId(user);
+        if (parentId != null && !parentId.equals(existing.getParentId())) {
+            result.put("success", false); result.put("message", "无权操作"); return result;
+        }
         lotteryItemService.delete(id);
         result.put("success", true);
         return result;
@@ -83,6 +97,10 @@ public class LotteryController {
         if (user == null) { result.put("success", false); result.put("message", "未登录"); return result; }
         LotteryItem item = lotteryItemService.getById(id);
         if (item == null) { result.put("success", false); result.put("message", "记录不存在"); return result; }
+        Long parentId = resolveParentId(user);
+        if (parentId != null && !parentId.equals(item.getParentId())) {
+            result.put("success", false); result.put("message", "无权操作"); return result;
+        }
         item.setStatus(item.getStatus() == 1 ? 0 : 1);
         lotteryItemService.update(item);
         result.put("success", true);
@@ -110,6 +128,16 @@ public class LotteryController {
         Map<String, Object> result = new HashMap<>();
         User user = (User) session.getAttribute("user");
         if (user == null) { result.put("success", false); result.put("message", "未登录"); return result; }
+        // 归属校验
+        com.punch.entity.LotteryRecord record = lotteryRecordService.getById(id);
+        if (record == null) { result.put("success", false); result.put("message", "记录不存在"); return result; }
+        Long parentId = resolveParentId(user);
+        if (parentId != null) {
+            User student = userService.getById(record.getStudentId());
+            if (student == null || !parentId.equals(student.getParentId())) {
+                result.put("success", false); result.put("message", "无权操作"); return result;
+            }
+        }
         int rows = lotteryRecordService.redeem(id, user.getId());
         result.put("success", rows > 0);
         return result;
@@ -123,6 +151,16 @@ public class LotteryController {
         Map<String, Object> result = new HashMap<>();
         User user = (User) session.getAttribute("user");
         if (user == null) { result.put("success", false); return result; }
+        // 归属校验
+        com.punch.entity.LotteryRecord record = lotteryRecordService.getById(id);
+        if (record == null) { result.put("success", false); return result; }
+        Long parentId = resolveParentId(user);
+        if (parentId != null) {
+            User student = userService.getById(record.getStudentId());
+            if (student == null || !parentId.equals(student.getParentId())) {
+                result.put("success", false); return result;
+            }
+        }
         int rows = isRedeemed == 1
                 ? lotteryRecordService.redeem(id, user.getId())
                 : lotteryRecordService.cancelRedeem(id);

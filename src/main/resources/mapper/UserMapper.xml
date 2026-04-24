@@ -157,4 +157,20 @@
     <select id="selectByParentId" resultMap="BaseResultMap">
         SELECT * FROM user WHERE parent_id = #{parentId} ORDER BY register_time DESC
     </select>
+
+    <select id="selectByIdForUpdate" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE id = #{id} FOR UPDATE
+    </select>
+
+    <update id="updateTotalPoints">
+        UPDATE user SET total_points = #{totalPoints} WHERE id = #{id}
+    </update>
+
+    <update id="updateFlowerCount">
+        UPDATE user SET flower_count = #{flowerCount} WHERE id = #{id}
+    </update>
+
+    <update id="updateLotteryCount">
+        UPDATE user SET lottery_count = GREATEST(0, COALESCE(lottery_count, 0) + #{delta}) WHERE id = #{id}
+    </update>
 </mapper>

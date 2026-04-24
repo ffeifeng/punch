@@ -20,4 +20,16 @@ public interface UserMapper {
     List<User> selectByParentId(@Param("parentId") Long parentId);
     List<User> selectParentUsers();
     List<User> selectStudentUsers();
+
+    /** 加行锁读，用于并发安全的余额更新 */
+    User selectByIdForUpdate(@Param("id") Long id);
+
+    /** 原子更新 total_points */
+    int updateTotalPoints(@Param("id") Long id, @Param("totalPoints") int totalPoints);
+
+    /** 原子更新 flower_count */
+    int updateFlowerCount(@Param("id") Long id, @Param("flowerCount") int flowerCount);
+
+    /** 原子增减 lottery_count（delta正=增加，负=减少，自动兜底0） */
+    int updateLotteryCount(@Param("id") Long id, @Param("delta") int delta);
 }

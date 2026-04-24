@@ -103,9 +103,16 @@ public class DailyCheckinController {
         }
         
         // 权限检查：admin可以为任何学生生成，家长只能为自己的孩子生成
-        if (!"admin".equals(user.getUsername()) && user.getParentId() == null) {
-            // 检查是否是该学生的家长
-            // 这里需要验证studentId是否属于当前家长
+        if (!"admin".equals(user.getUsername())) {
+            if (user.getParentId() != null) {
+                // 学生无权操作
+                result.put("success", false); result.put("message", "权限不足"); return result;
+            }
+            // 家长：验证 studentId 是否属于自己
+            User student = userService.getById(studentId);
+            if (student == null || !user.getId().equals(student.getParentId())) {
+                result.put("success", false); result.put("message", "无权为该学生操作"); return result;
+            }
         }
         
         try {

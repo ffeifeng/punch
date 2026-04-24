@@ -9,9 +9,11 @@ import com.punch.service.LotteryRecordService;
 import com.punch.service.SystemConfigService;
 import com.punch.entity.LotteryItem;
 import com.punch.entity.LotteryRecord;
+import com.punch.mapper.UserMapper;
 import com.punch.util.QrCodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,6 +51,9 @@ public class MobileController {
 
     @Autowired
     private com.punch.service.FlowerRecordService flowerRecordService;
+
+    @Autowired
+    private UserMapper userMapper;
     
     /**
      * 移动端登录页面
@@ -217,12 +222,14 @@ public class MobileController {
      */
     @PostMapping("/doLottery")
     @ResponseBody
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> doLottery(HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         User user = (User) session.getAttribute("user");
         if (user == null) { result.put("success", false); result.put("message", "未登录"); return result; }
 
-        User student = userService.getById(user.getId());
+        // FOR UPDATE 行锁：防止并发抽奖多扣/少扣次数
+        User student = userMapper.selectByIdForUpdate(user.getId());
         if (student == null || student.getParentId() == null) {
             result.put("success", false); result.put("message", "无效用户"); return result;
         }
@@ -305,9 +312,8 @@ public class MobileController {
             }
         }
 
-        // 扣减抽奖次数
-        student.setLotteryCount(remaining - 1);
-        userService.updateUser(student);
+        // 原子扣减抽奖次数（行锁已在事务开始时获得）
+        userMapper.updateLotteryCount(student.getId(), -1);
         session.setAttribute("user", userService.getById(student.getId()));
 
         // 更新所有保底奖品的独立计数器
@@ -336,6 +342,8 @@ public class MobileController {
                     "抽奖获得「" + won.getName() + "」赠送小红花",
                     record.getId());
             flowerRewarded = won.getFlowerReward();
+            // 小红花直接到账，抽奖记录自动标记已兑奖
+            lotteryRecordService.redeem(record.getId(), student.getId());
         }
         // ========== 小红花联动结束 ==========
 
@@ -399,6 +407,7 @@ public class MobileController {
      */
     @PostMapping("/exchangePoints")
     @ResponseBody
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> exchangePoints(@RequestParam int times, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         User user = (User) session.getAttribute("user");
@@ -406,7 +415,8 @@ public class MobileController {
 
         if (times <= 0) { result.put("success", false); result.put("message", "兑换次数必须大于0"); return result; }
 
-        User student = userService.getById(user.getId());
+        // FOR UPDATE 行锁，防止并发兑换
+        User student = userMapper.selectByIdForUpdate(user.getId());
         if (student == null || student.getParentId() == null) {
             result.put("success", false); result.put("message", "无效用户"); return result;
         }
@@ -416,7 +426,7 @@ public class MobileController {
             result.put("success", false); result.put("message", "积分兑换功能未开启"); return result;
         }
 
-        int currentPoints = pointsRecordService.getCurrentBalance(student.getId());
+        int currentPoints = student.getTotalPoints() != null ? student.getTotalPoints() : 0;
         int maxExchangeable = currentPoints / ratio;
         int needed = ratio * times;
 
@@ -426,20 +436,18 @@ public class MobileController {
             return result;
         }
 
-        // 扣除积分
+        // 扣除积分（加入当前事务）
         pointsRecordService.reducePoints(student.getId(), needed, 3, student.getId(),
                 "积分兑换抽奖 " + times + " 次（每次 " + ratio + " 积分）", null);
 
-        // 重新获取最新学生数据，避免用旧的 totalPoints 覆盖刚才的扣分结果
-        student = userService.getById(student.getId());
-        int newLotteryCount = (student.getLotteryCount() != null ? student.getLotteryCount() : 0) + times;
-        student.setLotteryCount(newLotteryCount);
-        userService.updateUser(student);
+        // 原子增加抽奖次数（同一事务，两步同时成功/回滚）
+        userMapper.updateLotteryCount(student.getId(), times);
 
         // 更新 session
         session.setAttribute("user", userService.getById(student.getId()));
 
         int newPoints = pointsRecordService.getCurrentBalance(student.getId());
+        int newLotteryCount = (student.getLotteryCount() != null ? student.getLotteryCount() : 0) + times;
         result.put("success", true);
         result.put("message", "兑换成功！消耗 " + needed + " 积分，获得 " + times + " 次抽奖机会");
         result.put("lotteryCount", newLotteryCount);

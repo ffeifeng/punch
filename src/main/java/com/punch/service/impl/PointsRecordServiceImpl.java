@@ -8,6 +8,7 @@ import com.punch.mapper.UserMapper;
 import com.punch.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
@@ -54,11 +55,17 @@ public class PointsRecordServiceImpl implements PointsRecordService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int addPoints(Long studentId, int points, int type, Long operatorId, String remark, Long recordId) {
-        int currentBalance = getCurrentBalance(studentId);
-        int newBalance = currentBalance + points;
-        
-        // 创建积分记录
+        // FOR UPDATE 行锁：同一用户的并发操作串行执行，避免读脏余额
+        User user = userMapper.selectByIdForUpdate(studentId);
+        if (user == null) throw new RuntimeException("用户不存在，ID: " + studentId);
+        int newBalance = (user.getTotalPoints() == null ? 0 : user.getTotalPoints()) + points;
+
+        // 原子更新 total_points
+        userMapper.updateTotalPoints(studentId, newBalance);
+
+        // 插入流水记录
         PointsRecord pr = new PointsRecord();
         pr.setStudentId(studentId);
         pr.setPoints(points);
@@ -68,72 +75,49 @@ public class PointsRecordServiceImpl implements PointsRecordService {
         pr.setOperateTime(new Date());
         pr.setRemark(remark);
         pr.setRecordId(recordId);
-        
-        // 插入积分记录
-        int insertResult = pointsRecordMapper.insert(pr);
-        if (insertResult <= 0) {
+        if (pointsRecordMapper.insert(pr) <= 0) {
             throw new RuntimeException("积分记录插入失败");
         }
-        
-        // 更新用户表总积分
-        User user = userMapper.selectById(studentId);
-        if (user != null) {
-            user.setTotalPoints(newBalance);
-            int updateResult = userMapper.update(user);
-            if (updateResult <= 0) {
-                throw new RuntimeException("用户积分更新失败");
-            }
-        } else {
-            throw new RuntimeException("用户不存在，ID: " + studentId);
-        }
-        
         return newBalance;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int reducePoints(Long studentId, int points, int type, Long operatorId, String remark, Long recordId) {
-        int currentBalance = getCurrentBalance(studentId);
-        // 安全兜底：实际扣除不超过当前余额，余额最低为0
+        // FOR UPDATE 行锁
+        User user = userMapper.selectByIdForUpdate(studentId);
+        if (user == null) return 0;
+        int currentBalance = user.getTotalPoints() == null ? 0 : user.getTotalPoints();
+        // 安全兜底：实际扣除不超过当前余额，余额最低为 0
         int actualDeduct = Math.min(points, currentBalance);
         if (actualDeduct <= 0) return currentBalance;
-        int balance = currentBalance - actualDeduct;
+        int newBalance = currentBalance - actualDeduct;
+
+        // 原子更新 total_points
+        userMapper.updateTotalPoints(studentId, newBalance);
+
+        // 插入流水记录
         PointsRecord pr = new PointsRecord();
         pr.setStudentId(studentId);
         pr.setPoints(-actualDeduct);
         pr.setType(type);
-        pr.setBalance(balance);
+        pr.setBalance(newBalance);
         pr.setOperatorId(operatorId);
         pr.setOperateTime(new Date());
         pr.setRemark(remark);
         pr.setRecordId(recordId);
         pointsRecordMapper.insert(pr);
-        // 更新user表总积分
-        User user = userMapper.selectById(studentId);
-        if(user != null) {
-            user.setTotalPoints(balance);
-            userMapper.update(user);
-        }
-        return balance;
+        return newBalance;
     }
 
     @Override
     public int getCurrentBalance(Long studentId) {
-        if (studentId == null) {
-            return 0;
+        if (studentId == null) return 0;
+        User user = userMapper.selectById(studentId);
+        if (user != null && user.getTotalPoints() != null) {
+            return user.getTotalPoints();
         }
-        
-        List<PointsRecord> list = pointsRecordMapper.selectByStudentId(studentId);
-        if (list == null || list.isEmpty()) {
-            // 如果没有积分记录，检查用户表中的总积分
-            User user = userMapper.selectById(studentId);
-            if (user != null && user.getTotalPoints() != null) {
-                return user.getTotalPoints();
-            }
-            return 0;
-        }
-        
-        // 返回最新记录的余额
-        return list.get(0).getBalance();
+        return 0;
     }
 
     @Override

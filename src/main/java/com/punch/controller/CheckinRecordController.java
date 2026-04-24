@@ -9,6 +9,7 @@ import com.punch.entity.User;
 import com.punch.mapper.CheckinCompleteRewardMapper;
 import com.punch.mapper.CheckinTemplateMapper;
 import com.punch.mapper.DailyCheckinItemMapper;
+import com.punch.mapper.UserMapper;
 import com.punch.service.CheckinRecordService;
 import com.punch.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,8 @@ public class CheckinRecordController {
     private UserService userService;
     @Autowired
     private com.punch.mapper.CheckinItemMapper checkinItemMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     // 查询打卡记录（按角色）
     @GetMapping("/list")
@@ -129,12 +132,8 @@ public class CheckinRecordController {
             int reward = template.getLotteryReward() != null ? template.getLotteryReward() : 0;
             if (reward <= 0) return;
 
-            // 赠送抽奖次数
-            User student = userService.getById(studentId);
-            if (student == null) return;
-            int newCount = (student.getLotteryCount() != null ? student.getLotteryCount() : 0) + reward;
-            student.setLotteryCount(newCount);
-            userService.updateUser(student);
+            // 原子增加抽奖次数（避免并发时读到旧值再覆盖写）
+            userMapper.updateLotteryCount(studentId, reward);
 
             // 记录奖励，防止重复发放
             CheckinCompleteReward record = new CheckinCompleteReward();
@@ -147,6 +146,8 @@ public class CheckinRecordController {
             // 更新 session 中的用户信息
             session.setAttribute("user", userService.getById(studentId));
 
+            User freshStudent = userService.getById(studentId);
+            int newCount = freshStudent != null && freshStudent.getLotteryCount() != null ? freshStudent.getLotteryCount() : 0;
             resp.put("lotteryRewarded", true);
             resp.put("lotteryRewardCount", reward);
             resp.put("lotteryCount", newCount);
@@ -161,6 +162,17 @@ public class CheckinRecordController {
     public String cancel(@RequestParam Long recordId, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) return "no_permission";
+        // 归属校验：家长只能撤销自己孩子的，学生只能撤销自己的
+        com.punch.entity.CheckinRecord record = recordService.getById(recordId);
+        if (record == null) return "fail";
+        if (user.getParentId() != null) {
+            // 学生：只能撤销自己的
+            if (!record.getStudentId().equals(user.getId())) return "no_permission";
+        } else if (!"admin".equals(user.getUsername())) {
+            // 家长：只能撤销自己孩子的
+            User student = userService.getById(record.getStudentId());
+            if (student == null || !user.getId().equals(student.getParentId())) return "no_permission";
+        }
         return recordService.cancelCheckin(recordId, user.getId());
     }
 
@@ -183,6 +195,13 @@ public class CheckinRecordController {
         // admin和家长可以撤销指定学生的打卡
         else {
             targetStudentId = (studentId != null) ? studentId : user.getId();
+            // 家长只能撤销自己孩子的打卡
+            if (!"admin".equals(user.getUsername()) && studentId != null) {
+                User student = userService.getById(studentId);
+                if (student == null || !user.getId().equals(student.getParentId())) {
+                    resp.put("result", "no_permission"); return resp;
+                }
+            }
         }
 
         Date today = new Date();
@@ -224,15 +243,15 @@ public class CheckinRecordController {
             int rewarded = reward.getLotteryCount() != null ? reward.getLotteryCount() : 0;
             // 实际可收回数量：不能超过当前持有量
             int toRevoke = Math.min(current, rewarded);
-            int newCount = current - toRevoke;
 
-            student.setLotteryCount(newCount);
-            userService.updateUser(student);
+            // 原子减少抽奖次数
+            userMapper.updateLotteryCount(studentId, -toRevoke);
             session.setAttribute("user", userService.getById(studentId));
 
             resp.put("lotteryRevoked", toRevoke > 0);
             resp.put("lotteryRevokedCount", toRevoke);
-            resp.put("lotteryCount", newCount);
+            User freshStudent = userService.getById(studentId);
+            resp.put("lotteryCount", freshStudent != null && freshStudent.getLotteryCount() != null ? freshStudent.getLotteryCount() : 0);
 
             // 关键判断：只有奖励券完整归还（说明孩子一次都没用），才删除奖励记录，
             // 允许重新打满后再次发放；若已消费过（哪怕一次），保留记录防止重复发放。
@@ -251,7 +270,14 @@ public class CheckinRecordController {
     public String supplement(@RequestParam Long studentId, @RequestParam Long itemId, @RequestParam String date, HttpSession session) throws Exception {
         User user = (User) session.getAttribute("user");
         if (user == null) return "no_permission";
-        Date d = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+        // 学生无权补打卡
+        if (user.getParentId() != null) return "no_permission";
+        // 家长只能补自己孩子的
+        if (!"admin".equals(user.getUsername())) {
+            User student = userService.getById(studentId);
+            if (student == null || !user.getId().equals(student.getParentId())) return "no_permission";
+        }
+        java.util.Date d = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(date);
         return recordService.supplementCheckin(studentId, itemId, d, user.getId());
     }
 

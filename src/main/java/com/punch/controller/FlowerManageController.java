@@ -69,6 +69,12 @@ public class FlowerManageController {
         if (user == null || user.getParentId() != null) {
             result.put("success", false); result.put("message", "无权限"); return result;
         }
+        // 归属校验
+        FlowerItem existing = flowerItemService.getById(item.getId());
+        if (existing == null) { result.put("success", false); result.put("message", "记录不存在"); return result; }
+        if (!"admin".equals(user.getUsername()) && !user.getId().equals(existing.getParentId())) {
+            result.put("success", false); result.put("message", "无权操作"); return result;
+        }
         flowerItemService.update(item);
         result.put("success", true);
         return result;
@@ -81,6 +87,12 @@ public class FlowerManageController {
         User user = (User) session.getAttribute("user");
         if (user == null || user.getParentId() != null) {
             result.put("success", false); result.put("message", "无权限"); return result;
+        }
+        // 归属校验
+        FlowerItem existing = flowerItemService.getById(id);
+        if (existing == null) { result.put("success", false); result.put("message", "记录不存在"); return result; }
+        if (!"admin".equals(user.getUsername()) && !user.getId().equals(existing.getParentId())) {
+            result.put("success", false); result.put("message", "无权操作"); return result;
         }
         flowerItemService.delete(id);
         result.put("success", true);
@@ -97,6 +109,9 @@ public class FlowerManageController {
         }
         FlowerItem item = flowerItemService.getById(id);
         if (item == null) { result.put("success", false); result.put("message", "不存在"); return result; }
+        if (!"admin".equals(user.getUsername()) && !user.getId().equals(item.getParentId())) {
+            result.put("success", false); result.put("message", "无权操作"); return result;
+        }
         item.setStatus(item.getStatus() == 1 ? 0 : 1);
         flowerItemService.update(item);
         result.put("success", true);
@@ -125,9 +140,16 @@ public class FlowerManageController {
     @PostMapping("/flower/manage/redemption/approve")
     @ResponseBody
     public Map<String, Object> approve(@RequestParam Long id, HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
         User user = (User) session.getAttribute("user");
-        if (user == null) {
-            Map<String, Object> r = new HashMap<>(); r.put("success", false); return r;
+        if (user == null) { result.put("success", false); return result; }
+        // 归属校验：只能审批自己家庭的申请
+        com.punch.entity.FlowerRedemption redemption = flowerRedemptionService.getRedemptionById(id);
+        if (redemption != null && !"admin".equals(user.getUsername()) && user.getParentId() == null) {
+            User student = userService.getById(redemption.getStudentId());
+            if (student == null || !user.getId().equals(student.getParentId())) {
+                result.put("success", false); result.put("message", "无权操作"); return result;
+            }
         }
         return flowerRedemptionService.approve(id, user.getId());
     }
@@ -136,9 +158,16 @@ public class FlowerManageController {
     @PostMapping("/flower/manage/redemption/revoke")
     @ResponseBody
     public Map<String, Object> revoke(@RequestParam Long id, HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
         User user = (User) session.getAttribute("user");
-        if (user == null) {
-            Map<String, Object> r = new HashMap<>(); r.put("success", false); return r;
+        if (user == null) { result.put("success", false); return result; }
+        // 归属校验
+        com.punch.entity.FlowerRedemption redemption = flowerRedemptionService.getRedemptionById(id);
+        if (redemption != null && !"admin".equals(user.getUsername()) && user.getParentId() == null) {
+            User student = userService.getById(redemption.getStudentId());
+            if (student == null || !user.getId().equals(student.getParentId())) {
+                result.put("success", false); result.put("message", "无权操作"); return result;
+            }
         }
         return flowerRedemptionService.revoke(id, user.getId());
     }
@@ -160,6 +189,12 @@ public class FlowerManageController {
 
         User student = userService.getById(studentId);
         if (student == null) { result.put("success", false); result.put("message", "学生不存在"); return result; }
+        // 归属校验：家长只能调整自己孩子的小红花
+        if (!"admin".equals(operator.getUsername()) && operator.getParentId() == null) {
+            if (!operator.getId().equals(student.getParentId())) {
+                result.put("success", false); result.put("message", "无权操作该学生"); return result;
+            }
+        }
 
         String remarkStr = remark != null && !remark.trim().isEmpty() ? remark.trim()
                 : (delta > 0 ? "家长手动增加小红花" : "家长手动扣减小红花");
