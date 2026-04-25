@@ -1827,9 +1827,8 @@
     </script>
 
 <!-- ==================== 小红花面板 ==================== -->
-<div id="flowerModal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.45);overscroll-behavior:contain;">
-  <div style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:center;">
-    <div style="width:100%;max-width:480px;height:78vh;background:#fff;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -4px 24px rgba(0,0,0,0.15);">
+<div id="flowerModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:3000;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;">
+  <div style="width:100%;max-width:480px;height:82vh;max-height:90vh;background:#fff;border-radius:20px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
     <!-- 头部（固定，不滚动） -->
     <div style="background:linear-gradient(135deg,#ff758c,#ff7eb3);padding:16px 20px 18px;border-radius:20px 20px 0 0;color:#fff;flex-shrink:0;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1895,8 +1894,7 @@
         </div>
       </div>
     </div><!-- 内容区 -->
-    </div><!-- 面板主体 max-width -->
-  </div><!-- bottom flex wrapper -->
+  </div><!-- 面板主体 max-width -->
 </div><!-- flowerModal -->
 
 <script>
@@ -1904,7 +1902,7 @@ var flowerBalance = 0;
 var currentFlowerTab = 'redeem';
 
 function openFlowerModal() {
-    document.getElementById('flowerModal').style.display = 'block';
+    document.getElementById('flowerModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
     loadFlowerInfo();
 }
