@@ -355,6 +355,14 @@ $(document).ready(function() {
     
     // 延迟初始化，确保EasyUI组件加载完成
     setTimeout(function() {
+        // 回车键触发登录
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                $('#loginForm').submit();
+            }
+        });
+
         // 监听表单提交
         $('#loginForm').submit(function(e) {
             e.preventDefault(); // 阻止默认提交
