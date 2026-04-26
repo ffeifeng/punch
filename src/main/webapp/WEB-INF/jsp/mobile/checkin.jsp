@@ -763,29 +763,29 @@
                 <button class="refresh-btn" onclick="refreshData()" title="刷新数据">
                     <span class="refresh-icon">🔄</span>
                 </button>
-                <button class="logout-btn" onclick="logout()">退出</button>
+                <button class="logout-btn" onclick="logout()">退�?/button>
             </div>
         </div>
         
         <div class="points-display">
-            <div class="points-label">我的总积分</div>
+            <div class="points-label">我的总积�?/div>
             <div class="points-value" id="totalPoints"><%= totalPoints != null ? totalPoints : 0 %></div>
             <div class="points-actions" id="quickActions" style="display:none;">
                 <button class="points-action-btn lottery" id="lotteryEntryBtn" onclick="openLotteryModal()">
                     <span class="btn-icon">🎰</span>
                     <span>幸运转盘</span>
-                    <span style="font-size:0.72rem;opacity:0.85;" id="lotteryCountBadge">剩余 0 次</span>
+                    <span style="font-size:0.72rem;opacity:0.85;" id="lotteryCountBadge">剩余 0 �?/span>
                 </button>
                 <button class="points-action-btn records" onclick="openRecordsModal()">
                     <span class="btn-icon">🏆</span>
                     <span>我的奖品</span>
                 </button>
-                <!-- 小红花入口 -->
+                <!-- 小红花入�?-->
                 <button class="points-action-btn" id="flowerEntryBtn" onclick="openFlowerModal()"
                         style="background:linear-gradient(135deg,#ff758c,#ff7eb3);border:none;">
                     <span class="btn-icon">🌸</span>
-                    <span>小红花</span>
-                    <span style="font-size:0.72rem;opacity:0.9;" id="flowerCountBadge">0 朵</span>
+                    <span>小红�?/span>
+                    <span style="font-size:0.72rem;opacity:0.9;" id="flowerCountBadge">0 �?/span>
                 </button>
             </div>
             <!-- 积分兑换按钮（有兑换配置才显示） -->
@@ -805,24 +805,24 @@
         <div class="section-header">
             <div class="section-title">📋 今日打卡事项</div>
             <div class="date-info" id="dateInfo">
-                <!-- 日期信息将通过JavaScript动态加载 -->
+                <!-- 日期信息将通过JavaScript动态加�?-->
             </div>
             <div class="stats-info" id="statsInfo">
-                <!-- 统计信息将通过JavaScript动态加载 -->
+                <!-- 统计信息将通过JavaScript动态加�?-->
             </div>
         </div>
         
         <div class="refresh-hint">
-            💡 点击右上角 🔄 按钮可刷新最新的积分、打卡项及抽奖信息
+            💡 点击右上�?🔄 按钮可刷新最新的积分、打卡项及抽奖信�?
         </div>
         
         <div class="loading" id="loading">
             <div class="loading-spinner"></div>
-            <p>加载中...</p>
+            <p>加载�?..</p>
         </div>
         
         <div id="checkinList">
-            <!-- 打卡事项将通过JavaScript动态加载 -->
+            <!-- 打卡事项将通过JavaScript动态加�?-->
         </div>
     </div>
 
@@ -843,7 +843,7 @@
         <div class="modal-card">
             <div class="modal-header">
                 <div class="modal-title">🎰 幸运转盘</div>
-                <button class="modal-close" onclick="closeLotteryModal()">✕</button>
+                <button class="modal-close" onclick="closeLotteryModal()">�?/button>
             </div>
             <div class="wheel-container">
                 <div class="wheel-wrapper">
@@ -851,7 +851,7 @@
                     <canvas id="wheelCanvas" width="280" height="280"></canvas>
                 </div>
             </div>
-            <div class="lottery-count-info">剩余抽奖次数：<strong id="lotteryCountDisplay">0</strong> 次</div>
+            <div class="lottery-count-info">剩余抽奖次数�?strong id="lotteryCountDisplay">0</strong> �?/div>
             <button class="lottery-spin-btn" id="lotteryBtn" onclick="doLottery()">🎉 点击抽奖</button>
         </div>
     </div>
@@ -861,15 +861,15 @@
         <div class="modal-card">
             <div class="modal-header">
                 <div class="modal-title">🏆 我的奖品记录</div>
-                <button class="modal-close" onclick="closeRecordsModal()">✕</button>
+                <button class="modal-close" onclick="closeRecordsModal()">�?/button>
             </div>
             <!-- Tab 切换 -->
             <div class="records-tabs">
-                <button class="records-tab active" id="tabPending" onclick="switchRecordsTab(0)">⏳ 未兑奖</button>
-                <button class="records-tab" id="tabRedeemed" onclick="switchRecordsTab(1)">✅ 已兑奖</button>
+                <button class="records-tab active" id="tabPending" onclick="switchRecordsTab(0)">�?未兑�?/button>
+                <button class="records-tab" id="tabRedeemed" onclick="switchRecordsTab(1)">�?已兑�?/button>
             </div>
             <div id="lotteryRecordList">
-                <div style="text-align:center;padding:30px;color:#718096;">加载中...</div>
+                <div style="text-align:center;padding:30px;color:#718096;">加载�?..</div>
             </div>
         </div>
     </div>
@@ -889,18 +889,18 @@
         <div class="modal-card" style="max-width:340px;">
             <div class="modal-header">
                 <div class="modal-title">💱 积分兑换抽奖</div>
-                <button class="modal-close" onclick="closeExchangeModal()">✕</button>
+                <button class="modal-close" onclick="closeExchangeModal()">�?/button>
             </div>
             <div style="padding:16px 0 8px;">
                 <div style="background:#f7fafc;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:0.9rem;color:#4a5568;line-height:1.7;">
-                    <div>🪙 当前积分：<strong id="exchangeCurrentPoints" style="color:#553c9a;">-</strong></div>
-                    <div>🎯 兑换比例：<strong id="exchangeRatioLabel" style="color:#553c9a;">-</strong></div>
-                    <div>🎰 最多可兑换：<strong id="exchangeMaxTimes" style="color:#553c9a;">-</strong> 次</div>
+                    <div>🪙 当前积分�?strong id="exchangeCurrentPoints" style="color:#553c9a;">-</strong></div>
+                    <div>🎯 兑换比例�?strong id="exchangeRatioLabel" style="color:#553c9a;">-</strong></div>
+                    <div>🎰 最多可兑换�?strong id="exchangeMaxTimes" style="color:#553c9a;">-</strong> �?/div>
                 </div>
                 <div style="margin-bottom:14px;">
                     <div style="font-size:0.85rem;font-weight:600;color:#4a5568;margin-bottom:8px;">兑换次数</div>
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <button onclick="adjustExchange(-1)" style="width:38px;height:38px;border-radius:50%;border:2px solid #667eea;background:white;color:#667eea;font-size:1.3rem;font-weight:bold;cursor:pointer;line-height:1;">−</button>
+                        <button onclick="adjustExchange(-1)" style="width:38px;height:38px;border-radius:50%;border:2px solid #667eea;background:white;color:#667eea;font-size:1.3rem;font-weight:bold;cursor:pointer;line-height:1;">�?/button>
                         <input type="number" id="exchangeTimes" value="1" min="1"
                                style="flex:1;text-align:center;padding:8px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:1.1rem;font-weight:700;">
                         <button onclick="adjustExchange(1)" style="width:38px;height:38px;border-radius:50%;border:2px solid #667eea;background:#667eea;color:white;font-size:1.3rem;font-weight:bold;cursor:pointer;line-height:1;">+</button>
@@ -915,9 +915,10 @@
     </div>
 
     <script>
+        var ctx = '${pageContext.request.contextPath}';
         let studentId = <%= student.getId() %>;
         
-        // 页面加载完成后获取打卡事项（由下方统一处理）
+        // 页面加载完成后获取打卡事项（由下方统一处理�?
         // window.addEventListener('load', ...) 已移至文件底部统一调用
         
         // 更新日期信息
@@ -926,10 +927,10 @@
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
-            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const weekdays = ['星期�?, '星期一', '星期�?, '星期�?, '星期�?, '星期�?, '星期�?];
             const weekday = weekdays[now.getDay()];
             
-            const dateStr = year + '年' + month + '月' + day + '日 ' + weekday;
+            const dateStr = year + '�? + month + '�? + day + '�?' + weekday;
             document.getElementById('dateInfo').textContent = dateStr;
         }
         
@@ -937,13 +938,13 @@
         function updateStatsInfo(completedCount, pendingCount) {
             const statsContainer = document.getElementById('statsInfo');
             statsContainer.innerHTML = 
-                '<div class="stat-item completed">✅ 已打卡 ' + completedCount + ' 项</div>' +
-                '<div class="stat-item pending">⏰ 未打卡 ' + pendingCount + ' 项</div>';
+                '<div class="stat-item completed">�?已打�?' + completedCount + ' �?/div>' +
+                '<div class="stat-item pending">�?未打�?' + pendingCount + ' �?/div>';
         }
         
-        // 局部更新单个事项的状态（避免整页刷新）
+        // 局部更新单个事项的状态（避免整页刷新�?
         function updateItemStatus(itemId, newStatus) {
-            // 找到对应的事项元素 - 使用更精确的选择器
+            // 找到对应的事项元�?- 使用更精确的选择�?
             const checkinItems = document.querySelectorAll('.checkin-item');
             let targetItem = null;
             
@@ -957,20 +958,20 @@
             });
             
             if (!targetItem) {
-                console.log('未找到itemId为 ' + itemId + ' 的事项元素');
+                console.log('未找到itemId�?' + itemId + ' 的事项元�?);
                 return;
             }
             
-            // 更新事项的视觉状态
+            // 更新事项的视觉状�?
             if (newStatus === 1) {
-                // 已打卡状态
+                // 已打卡状�?
                 targetItem.classList.add('checked');
                 targetItem.classList.remove('overdue');
                 
-                // 更新状态文本
+                // 更新状态文�?
                 const statusElement = targetItem.querySelector('.item-status');
                 if (statusElement) {
-                    statusElement.textContent = '已打卡';
+                    statusElement.textContent = '已打�?;
                     statusElement.className = 'item-status status-checked';
                 }
                 
@@ -982,11 +983,11 @@
                             '🔄 撤销打卡' +
                         '</button>' +
                         '<button class="checkin-btn" disabled>' +
-                            '✅ 已完成' +
+                            '�?已完�? +
                         '</button>';
                 }
             } else {
-                // 未打卡状态
+                // 未打卡状�?
                 targetItem.classList.remove('checked');
                 
                 // 检查是否超时，如果超时则添加overdue样式
@@ -997,10 +998,10 @@
                     targetItem.classList.remove('overdue');
                 }
                 
-                // 更新状态文本
+                // 更新状态文�?
                 const statusElement = targetItem.querySelector('.item-status');
                 if (statusElement) {
-                    statusElement.textContent = '未打卡';
+                    statusElement.textContent = '未打�?;
                     statusElement.className = 'item-status status-unchecked';
                 }
                 
@@ -1009,12 +1010,12 @@
                 if (actionButtons) {
                     actionButtons.innerHTML = 
                         '<button class="checkin-btn primary" onclick="doCheckin(' + itemId + ')">' +
-                            '✅ 立即打卡' +
+                            '�?立即打卡' +
                         '</button>';
                 }
             }
             
-            // 重新计算并更新统计信息
+            // 重新计算并更新统计信�?
             const allItems = document.querySelectorAll('.checkin-item');
             let completedCount = 0;
             let pendingCount = 0;
@@ -1034,7 +1035,7 @@
         function loadCheckinItems() {
             document.getElementById('loading').style.display = 'block';
             
-            return fetch('/dailyCheckin/todayItems?studentId=' + studentId)
+            return fetch(ctx + '/dailyCheckin/todayItems?studentId=' + studentId)
                 .then(response => response.json())
                 .then(data => {
                     renderCheckinItems(data);
@@ -1066,7 +1067,7 @@
                 return;
             }
             
-            // 统计已打卡和未打卡数量
+            // 统计已打卡和未打卡数�?
             let completedCount = 0;
             let pendingCount = 0;
             items.forEach(item => {
@@ -1089,10 +1090,10 @@
                 html += '<div class="checkin-item ' + (item.status == 1 ? 'checked' : '') + ' ' + (isOverdue ? 'overdue' : '') + '">' +
                     '<div class="item-header">' +
                         '<div class="item-name">' + item.itemName + '</div>' +
-                        '<div class="item-points">+' + (item.itemPoints || item.points || 0) + '分</div>' +
+                        '<div class="item-points">+' + (item.itemPoints || item.points || 0) + '�?/div>' +
                     '</div>' +
                     '<div class="item-details">' +
-                        '<div class="item-time">⏰ ' + (item.checkinStartTime || '00:00') + ' - ' + (item.checkinEndTime || '23:59') + '</div>' +
+                        '<div class="item-time">�?' + (item.checkinStartTime || '00:00') + ' - ' + (item.checkinEndTime || '23:59') + '</div>' +
                         '<div class="item-status ' + statusClass + '">' + statusText + '</div>' +
                     '</div>' +
                     '<div class="action-buttons">' + renderActionButtons(item) + '</div>' +
@@ -1104,20 +1105,20 @@
         
         // 渲染操作按钮
         function renderActionButtons(item) {
-            if (item.status === 0) { // 未打卡
+            if (item.status === 0) { // 未打�?
                 return '<button class="checkin-btn primary" onclick="doCheckin(' + item.itemId + ')">' +
-                    '✅ 立即打卡' +
+                    '�?立即打卡' +
                 '</button>';
-            } else if (item.status === 1) { // 已打卡
+            } else if (item.status === 1) { // 已打�?
                 return '<button class="checkin-btn secondary" onclick="revokeCheckin(' + item.itemId + ')">' +
                         '🔄 撤销打卡' +
                     '</button>' +
                     '<button class="checkin-btn" disabled>' +
-                        '✅ 已完成' +
+                        '�?已完�? +
                     '</button>';
             } else {
                 return '<button class="checkin-btn" disabled>' +
-                    '🚫 暂不可打卡' +
+                    '🚫 暂不可打�? +
                 '</button>';
             }
         }
@@ -1131,11 +1132,11 @@
             }
         }
         
-        // 获取状态文本
+        // 获取状态文�?
         function getStatusText(status) {
             switch(status) {
-                case 0: return '未打卡';
-                case 1: return '已打卡';
+                case 0: return '未打�?;
+                case 1: return '已打�?;
                 default: return '不可打卡';
             }
         }
@@ -1168,7 +1169,7 @@
             formData.append('itemId', itemId);
             formData.append('studentId', studentId);
             
-            fetch('/checkinRecord/doCheckin', {
+            fetch(ctx + '/checkinRecord/doCheckin', {
                 method: 'POST',
                 body: formData
             })
@@ -1176,24 +1177,24 @@
             .then(data => {
                 const result = data.result;
                 if (result === 'success') {
-                    showMessage('打卡成功！🎉', 'success');
+                    showMessage('打卡成功！�?, 'success');
                     updateItemStatus(itemId, 1);
                     updateTotalPoints();
-                    // 全部打卡完成赠送抽奖次数
+                    // 全部打卡完成赠送抽奖次�?
                     if (data.lotteryRewarded) {
                         lotteryCount = data.lotteryCount;
                         updateLotteryUI();
                         document.getElementById('quickActions').style.display = 'flex';
                         setTimeout(function() {
-                            showMessage('🎰 全部打卡完成！获赠 ' + data.lotteryRewardCount + ' 次抽奖机会！', 'success');
+                            showMessage('🎰 全部打卡完成！获�?' + data.lotteryRewardCount + ' 次抽奖机会！', 'success');
                         }, 1200);
                     }
                 } else if (result === 'already_checked') {
-                    showMessage('今日已打卡过此事项', 'info');
+                    showMessage('今日已打卡过此事�?, 'info');
                 } else if (result === 'no_permission') {
-                    showMessage('没有权限进行此操作', 'error');
+                    showMessage('没有权限进行此操�?, 'error');
                 } else {
-                    showMessage('打卡失败：' + result, 'error');
+                    showMessage('打卡失败�? + result, 'error');
                 }
             })
             .catch(error => {
@@ -1206,7 +1207,7 @@
         function revokeCheckin(itemId) {
             showConfirmDialog(
                 '确认撤销打卡',
-                '确定要撤销今日的打卡记录吗？\n撤销后将扣除相应积分。',
+                '确定要撤销今日的打卡记录吗？\n撤销后将扣除相应积分�?,
                 function() {
                     // 确认撤销
                     performRevokeCheckin(itemId);
@@ -1221,7 +1222,7 @@
             formData.append('itemId', itemId);
             formData.append('studentId', studentId);
             
-            fetch('/checkinRecord/revokeToday', {
+            fetch(ctx + '/checkinRecord/revokeToday', {
                 method: 'POST',
                 body: formData
             })
@@ -1232,20 +1233,20 @@
                     showMessage('撤销成功', 'success');
                     updateItemStatus(itemId, 0);
                     updateTotalPoints();
-                    // 若全部完成奖励被收回，更新抽奖次数显示
+                    // 若全部完成奖励被收回，更新抽奖次数显�?
                     if (data.lotteryRevoked) {
                         lotteryCount = data.lotteryCount;
                         updateLotteryUI();
                         setTimeout(function() {
-                            showMessage('⚠️ 打卡奖励已收回 ' + data.lotteryRevokedCount + ' 次抽奖机会', 'info');
+                            showMessage('⚠️ 打卡奖励已收�?' + data.lotteryRevokedCount + ' 次抽奖机�?, 'info');
                         }, 1200);
                     }
                 } else if (result === 'not_found') {
                     showMessage('未找到今日的打卡记录', 'info');
                 } else if (result === 'no_permission') {
-                    showMessage('没有权限进行此操作', 'error');
+                    showMessage('没有权限进行此操�?, 'error');
                 } else {
-                    showMessage('撤销失败：' + result, 'error');
+                    showMessage('撤销失败�? + result, 'error');
                 }
             })
             .catch(error => {
@@ -1254,9 +1255,9 @@
             });
         }
         
-        // 更新总积分显示（从数据库实时查询，不依赖session缓存）
+        // 更新总积分显示（从数据库实时查询，不依赖session缓存�?
         function updateTotalPoints() {
-            return fetch('/mobile/currentPoints')
+            return fetch(ctx + '/mobile/currentPoints')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.totalPoints !== undefined) {
@@ -1269,7 +1270,7 @@
                 });
         }
         
-        // 刷新所有数据
+        // 刷新所有数�?
         function refreshData() {
             const refreshBtn = document.querySelector('.refresh-btn');
             const refreshIcon = document.querySelector('.refresh-icon');
@@ -1309,36 +1310,36 @@
                 const year = now.getFullYear();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
                 const day = String(now.getDate()).padStart(2, '0');
-                const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                const weekdays = ['星期�?, '星期一', '星期�?, '星期�?, '星期�?, '星期�?, '星期�?];
                 const weekday = weekdays[now.getDay()];
                 
-                const dateStr = year + '年' + month + '月' + day + '日 ' + weekday;
+                const dateStr = year + '�? + month + '�? + day + '�?' + weekday;
                 document.getElementById('dateInfo').textContent = dateStr;
                 resolve();
             });
         }
         
-        // 退出登录
+        // 退出登�?
         function logout() {
-            if (!confirm('确定要退出登录吗？')) {
+            if (!confirm('确定要退出登录吗�?)) {
                 return;
             }
             
-            fetch('/mobile/logout', {
+            fetch(ctx + '/mobile/logout', {
                 method: 'POST'
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showMessage('退出成功', 'success');
+                    showMessage('退出成�?, 'success');
                     setTimeout(() => {
-                        window.location.href = '/mobile/login';
+                        window.location.href = ctx + '/mobile/login';
                     }, 1000);
                 }
             })
             .catch(error => {
-                console.error('退出失败:', error);
-                window.location.href = '/mobile/login';
+                console.error('退出失�?', error);
+                window.location.href = ctx + '/mobile/login';
             });
         }
         
@@ -1359,7 +1360,7 @@
             confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
             cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
             
-            // 添加新的事件监听器
+            // 添加新的事件监听�?
             newConfirmBtn.addEventListener('click', function() {
                 hideConfirmDialog();
                 if (onConfirm) onConfirm();
@@ -1370,7 +1371,7 @@
                 if (onCancel) onCancel();
             });
             
-            // 点击对话框外部关闭
+            // 点击对话框外部关�?
             dialog.addEventListener('click', function(e) {
                 if (e.target === dialog) {
                     hideConfirmDialog();
@@ -1378,11 +1379,11 @@
                 }
             });
             
-            // 显示对话框
+            // 显示对话�?
             dialog.classList.add('show');
         }
         
-        // 隐藏确认对话框
+        // 隐藏确认对话�?
         function hideConfirmDialog() {
             const dialog = document.getElementById('customDialog');
             dialog.classList.remove('show');
@@ -1400,8 +1401,8 @@
             }, 3000);
         }
         
-        // 移除自动刷新功能，改为手动操作后局部更新
-        // 如果需要刷新数据，用户可以下拉刷新或重新进入页面
+        // 移除自动刷新功能，改为手动操作后局部更�?
+        // 如果需要刷新数据，用户可以下拉刷新或重新进入页�?
 
         // ==================== 抽奖转盘功能 ====================
         var lotteryItems = [];
@@ -1411,12 +1412,12 @@
         var exchangeMaxTimes = 0;
 
         function loadExchangeConfig() {
-            return fetch('/mobile/exchangeConfig')
+            return fetch(ctx + '/mobile/exchangeConfig')
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     if (data.success && data.enabled) {
                         exchangeRatio = data.ratio;
-                        document.getElementById('exchangeRatioHint').textContent = data.ratio + '积分/次';
+                        document.getElementById('exchangeRatioHint').textContent = data.ratio + '积分/�?;
                         document.getElementById('exchangeEntry').style.display = 'block';
                     } else {
                         document.getElementById('exchangeEntry').style.display = 'none';
@@ -1426,16 +1427,16 @@
         }
 
         function openExchangeModal() {
-            fetch('/mobile/exchangeConfig')
+            fetch(ctx + '/mobile/exchangeConfig')
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     if (!data.success || !data.enabled) {
-                        showMessage('积分兑换功能未开启', 'info'); return;
+                        showMessage('积分兑换功能未开�?, 'info'); return;
                     }
                     exchangeRatio = data.ratio;
                     exchangeMaxTimes = data.maxExchangeable || 0;
                     document.getElementById('exchangeCurrentPoints').textContent = data.currentPoints + ' 积分';
-                    document.getElementById('exchangeRatioLabel').textContent = data.ratio + ' 积分 = 1 次抽奖';
+                    document.getElementById('exchangeRatioLabel').textContent = data.ratio + ' 积分 = 1 次抽�?;
                     document.getElementById('exchangeMaxTimes').textContent = exchangeMaxTimes;
                     var input = document.getElementById('exchangeTimes');
                     input.max = exchangeMaxTimes;
@@ -1444,7 +1445,7 @@
                     var confirmBtn = document.getElementById('exchangeConfirmBtn');
                     if (exchangeMaxTimes <= 0) {
                         confirmBtn.disabled = true;
-                        confirmBtn.textContent = '积分不足，无法兑换';
+                        confirmBtn.textContent = '积分不足，无法兑�?;
                     } else {
                         confirmBtn.disabled = false;
                         confirmBtn.textContent = '💱 确认兑换';
@@ -1481,27 +1482,27 @@
 
         function updateExchangeCostHint() {
             if (exchangeMaxTimes <= 0) {
-                document.getElementById('exchangeCostHint').textContent = '当前积分不足，无法兑换';
+                document.getElementById('exchangeCostHint').textContent = '当前积分不足，无法兑�?;
                 return;
             }
             var times = parseInt(document.getElementById('exchangeTimes').value) || 1;
             var cost = times * exchangeRatio;
             document.getElementById('exchangeCostHint').textContent =
-                '本次消耗 ' + cost + ' 积分，兑换 ' + times + ' 次抽奖机会';
+                '本次消�?' + cost + ' 积分，兑�?' + times + ' 次抽奖机�?;
         }
 
         function doExchange() {
             var times = parseInt(document.getElementById('exchangeTimes').value);
             if (!times || times <= 0) { showMessage('请输入有效的兑换次数', 'error'); return; }
             if (times > exchangeMaxTimes) {
-                showMessage('兑换次数不能超过 ' + exchangeMaxTimes + ' 次（积分不足）', 'error');
+                showMessage('兑换次数不能超过 ' + exchangeMaxTimes + ' 次（积分不足�?, 'error');
                 document.getElementById('exchangeTimes').value = exchangeMaxTimes > 0 ? exchangeMaxTimes : 1;
                 updateExchangeCostHint();
                 return;
             }
             var btn = document.getElementById('exchangeConfirmBtn');
             btn.disabled = true;
-            fetch('/mobile/exchangePoints', {
+            fetch(ctx + '/mobile/exchangePoints', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: 'times=' + times
@@ -1519,7 +1520,7 @@
                     loadExchangeConfig();
                     showMessage('🎉 ' + data.message, 'success');
                 } else {
-                    showMessage('❌ ' + data.message, 'error');
+                    showMessage('�?' + data.message, 'error');
                 }
             })
             .catch(function() {
@@ -1535,7 +1536,7 @@
         var WHEEL_COLORS = ['#4fd1c5','#f6d365','#fda085','#a29bfe','#fd79a8','#00b894','#fdcb6e','#e17055','#74b9ff','#55efc4'];
 
         function loadLotteryData() {
-            return fetch('/mobile/lotteryItems')
+            return fetch(ctx + '/mobile/lotteryItems')
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     if (data.success && data.items && data.items.length > 0) {
@@ -1544,7 +1545,7 @@
                         updateLotteryUI();
                         document.getElementById('quickActions').style.display = 'flex';
                     } else {
-                        // 抽奖项被全部删除/禁用，或次数为0：重置状态，隐藏入口
+                        // 抽奖项被全部删除/禁用，或次数�?：重置状态，隐藏入口
                         lotteryItems = [];
                         lotteryCount = data.lotteryCount || 0;
                         updateLotteryUI();
@@ -1559,7 +1560,7 @@
         function updateLotteryUI() {
             document.getElementById('lotteryCountDisplay').textContent = lotteryCount;
             document.getElementById('lotteryBtn').disabled = lotteryCount <= 0;
-            document.getElementById('lotteryCountBadge').textContent = '剩余 ' + lotteryCount + ' 次';
+            document.getElementById('lotteryCountBadge').textContent = '剩余 ' + lotteryCount + ' �?;
             var entryBtn = document.getElementById('lotteryEntryBtn');
             if (lotteryCount <= 0) {
                 entryBtn.classList.add('disabled-btn');
@@ -1572,7 +1573,7 @@
 
         function openLotteryModal() {
             document.getElementById('lotteryModal').classList.add('show');
-            // 弹窗打开后绘制转盘
+            // 弹窗打开后绘制转�?
             setTimeout(function() { drawWheel(currentAngle); }, 50);
         }
 
@@ -1583,7 +1584,7 @@
 
         function openRecordsModal() {
             document.getElementById('recordsModal').classList.add('show');
-            // 默认显示未兑奖
+            // 默认显示未兑�?
             currentRecordsTab = 0;
             document.getElementById('tabPending').classList.add('active');
             document.getElementById('tabRedeemed').classList.remove('active');
@@ -1595,7 +1596,7 @@
             document.getElementById('tabPending').classList.toggle('active', status === 0);
             document.getElementById('tabRedeemed').classList.toggle('active', status === 1);
             document.getElementById('lotteryRecordList').innerHTML =
-                '<div style="text-align:center;padding:30px;color:#718096;">加载中...</div>';
+                '<div style="text-align:center;padding:30px;color:#718096;">加载�?..</div>';
             loadMyLotteryRecords(status);
         }
 
@@ -1656,7 +1657,7 @@
                 ctx.restore();
             });
 
-            // 中心圆
+            // 中心�?
             ctx.beginPath();
             ctx.arc(cx, cy, 28, 0, 2 * Math.PI);
             ctx.fillStyle = 'white';
@@ -1674,7 +1675,7 @@
         function doLottery() {
             if (wheelSpinning) return;
             if (lotteryCount <= 0) {
-                showMessage('抽奖次数已用完 😢', 'error');
+                showMessage('抽奖次数已用�?😢', 'error');
                 return;
             }
             if (lotteryItems.length === 0) {
@@ -1685,33 +1686,33 @@
             wheelSpinning = true;
             document.getElementById('lotteryBtn').disabled = true;
 
-            fetch('/mobile/doLottery', { method: 'POST' })
+            fetch(ctx + '/mobile/doLottery', { method: 'POST' })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     if (data.success) {
                         var prize = data.prize;
                         var remaining = data.remainingCount;
-                        // 若抽到小红花奖品，更新花朵余量显示
+                        // 若抽到小红花奖品，更新花朵余量显�?
                         if (data.flowerRewarded && data.flowerRewarded > 0) {
                             updateFlowerBadge(data.flowerBalance || 0);
                         }
 
-                        // 找到中奖奖品的索引
+                        // 找到中奖奖品的索�?
                         var prizeIndex = lotteryItems.findIndex(function(i) { return i.name === prize; });
                         if (prizeIndex < 0) {
                             // 本地奖品列表与后端不一致（后台已修改），先停止转动
                             wheelSpinning = false;
                             lotteryCount = remaining;
                             showMessage('🔄 奖品列表已更新，正在刷新...', 'info');
-                            // 自动重载抽奖数据，重载后再提示中奖
+                            // 自动重载抽奖数据，重载后再提示中�?
                             loadLotteryData().then(function() {
-                                showMessage('🎉 恭喜获得：' + prize + '！请重新查看转盘', 'success');
+                                showMessage('🎉 恭喜获得�? + prize + '！请重新查看转盘', 'success');
                                 document.getElementById('lotteryBtn').disabled = lotteryCount <= 0;
                             });
                             return;
                         }
 
-                        // 计算目标角度：让对应扇形转到顶部指针处
+                        // 计算目标角度：让对应扇形转到顶部指针�?
                         var sliceAngle = (2 * Math.PI) / lotteryItems.length;
                         var targetSliceCenter = prizeIndex * sliceAngle + sliceAngle / 2;
                         // 转盘需要旋转使 targetSliceCenter 到达 -π/2（顶部）
@@ -1720,7 +1721,7 @@
                         var totalRotation = currentAngle + (5 * 2 * Math.PI) + (targetAngle - (currentAngle % (2 * Math.PI)));
 
                         spinWheel(totalRotation, prize, remaining);
-                    } else {                        // 同步后端返回的最新次数
+                    } else {                        // 同步后端返回的最新次�?
                         if (typeof data.remainingCount !== 'undefined') {
                             lotteryCount = data.remainingCount;
                             updateLotteryUI();
@@ -1728,7 +1729,7 @@
                         showMessage(data.message || '抽奖失败，请重试', 'error');
                         wheelSpinning = false;
                         document.getElementById('lotteryBtn').disabled = lotteryCount <= 0;
-                        // 奖品列表变更时自动重载
+                        // 奖品列表变更时自动重�?
                         if (data.errorType === 'NO_ITEMS') {
                             setTimeout(function() { loadLotteryData(); }, 1500);
                         }
@@ -1798,7 +1799,7 @@
 
         function renderLotteryRecords(records, tabStatus) {
             var container = document.getElementById('lotteryRecordList');
-            var emptyText = tabStatus === 0 ? '暂无未兑奖记录 🎉' : '暂无已兑奖记录';
+            var emptyText = tabStatus === 0 ? '暂无未兑奖记�?🎉' : '暂无已兑奖记�?;
             if (!records || records.length === 0) {
                 container.innerHTML = '<div style="text-align:center;padding:20px;color:#718096;">' + emptyText + '</div>';
                 return;
@@ -1807,8 +1808,8 @@
             records.forEach(function(r) {
                 var timeStr = r.lotteryTime ? new Date(r.lotteryTime).toLocaleDateString('zh-CN', {month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'}) : '';
                 var statusHtml = r.isRedeemed === 1
-                    ? '<span class="record-status-redeemed">✅ 已兑奖</span>'
-                    : '<span class="record-status-pending">⏳ 待兑奖</span>';
+                    ? '<span class="record-status-redeemed">�?已兑�?/span>'
+                    : '<span class="record-status-pending">�?待兑�?/span>';
                 html += '<div class="record-item">'
                     + '<div><div class="record-prize">🎁 ' + r.itemName + '</div><div class="record-time">' + timeStr + '</div></div>'
                     + statusHtml
@@ -1826,18 +1827,18 @@
         });
     </script>
 
-<!-- ==================== 小红花面板 ==================== -->
+<!-- ==================== 小红花面�?==================== -->
 <div id="flowerModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:3000;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;">
   <div style="width:100%;max-width:480px;height:82vh;max-height:90vh;background:#fff;border-radius:20px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
     <!-- 头部（固定，不滚动） -->
     <div style="background:linear-gradient(135deg,#ff758c,#ff7eb3);padding:16px 20px 18px;border-radius:20px 20px 0 0;color:#fff;flex-shrink:0;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:1.15rem;font-weight:700;">🌸 我的小红花</div>
-        <button onclick="closeFlowerModal()" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">✕</button>
+        <div style="font-size:1.15rem;font-weight:700;">🌸 我的小红�?/div>
+        <button onclick="closeFlowerModal()" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">�?/button>
       </div>
       <div style="margin-top:10px;display:flex;align-items:baseline;gap:8px;">
         <span style="font-size:2.5rem;font-weight:900;" id="flowerBalanceDisplay">0</span>
-        <span style="font-size:1rem;opacity:0.9;">朵</span>
+        <span style="font-size:1rem;opacity:0.9;">�?/span>
       </div>
     </div>
     <!-- Tab 导航（固定，不滚动） -->
@@ -1849,12 +1850,12 @@
       <button id="flowerTab_redemptions" onclick="switchFlowerTab('redemptions')"
               style="flex:1;padding:12px 0;border:none;background:none;font-size:0.9rem;color:#718096;border-bottom:2.5px solid transparent;cursor:pointer;">兑换申请</button>
     </div>
-    <!-- 内容区（填满剩余高度，各 Tab 独立滚动） -->
+    <!-- 内容区（填满剩余高度，各 Tab 独立滚动�?-->
     <div style="flex:1;overflow:hidden;position:relative;">
       <!-- 兑换面板 -->
       <div id="flowerPanel_redeem" style="position:absolute;inset:0;overflow-y:auto;padding:16px;">
         <div id="flowerItemList" style="display:flex;flex-direction:column;gap:12px;">
-          <div style="text-align:center;color:#a0aec0;padding:30px;">加载中...</div>
+          <div style="text-align:center;color:#a0aec0;padding:30px;">加载�?..</div>
         </div>
       </div>
       <!-- 变更记录面板 -->
@@ -1869,15 +1870,15 @@
       <div id="redeemPanel" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.35);align-items:flex-end;z-index:10;">
         <div style="width:100%;background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 30px;">
           <div style="font-size:1rem;font-weight:700;color:#2d3748;margin-bottom:16px;">
-            🌸 兑换数量 — <span id="redeemItemName"></span>
+            🌸 兑换数量 �?<span id="redeemItemName"></span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#718096;margin-bottom:14px;">
-            <span>每次消耗：<strong style="color:#ff758c;" id="redeemCostPerUnit"></strong> 朵</span>
-            <span>每次时长：<strong style="color:#38a169;" id="redeemTimePerUnit"></strong></span>
+            <span>每次消耗：<strong style="color:#ff758c;" id="redeemCostPerUnit"></strong> �?/span>
+            <span>每次时长�?strong style="color:#38a169;" id="redeemTimePerUnit"></strong></span>
           </div>
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
             <button onclick="var v=document.getElementById('redeemQtyInput');v.value=Math.max(1,parseInt(v.value)-1);calcRedeemSummary();"
-                    style="width:40px;height:40px;border-radius:50%;border:2px solid #fed7e2;background:#fff5f7;font-size:1.3rem;color:#ff758c;cursor:pointer;font-weight:bold;">−</button>
+                    style="width:40px;height:40px;border-radius:50%;border:2px solid #fed7e2;background:#fff5f7;font-size:1.3rem;color:#ff758c;cursor:pointer;font-weight:bold;">�?/button>
             <input id="redeemQtyInput" type="number" min="1" value="1" oninput="calcRedeemSummary()"
                    style="flex:1;height:44px;text-align:center;font-size:1.4rem;font-weight:700;border:2px solid #fed7e2;border-radius:12px;color:#2d3748;">
             <button onclick="var v=document.getElementById('redeemQtyInput');v.value=Math.min(parseInt(v.max)||99,parseInt(v.value)+1);calcRedeemSummary();"
@@ -1893,11 +1894,12 @@
           </div>
         </div>
       </div>
-    </div><!-- 内容区 -->
+    </div><!-- 内容�?-->
   </div><!-- 面板主体 max-width -->
 </div><!-- flowerModal -->
 
 <script>
+var ctx = '${pageContext.request.contextPath}';
 var flowerBalance = 0;
 var currentFlowerTab = 'redeem';
 
@@ -1923,26 +1925,26 @@ function switchFlowerTab(tab) {
     if (tab === 'redemptions') loadMyRedemptions();
 }
 function loadFlowerInfo() {
-    fetch('/flower/info')
+    fetch(ctx + '/flower/info')
         .then(function(r){ return r.json(); })
         .then(function(data){
             if (!data.success) return;
             flowerBalance = data.balance || 0;
             document.getElementById('flowerBalanceDisplay').textContent = flowerBalance;
-            document.getElementById('flowerCountBadge').textContent = flowerBalance + ' 朵';
+            document.getElementById('flowerCountBadge').textContent = flowerBalance + ' �?;
             renderFlowerItems(data.items || []);
         });
 }
 function renderFlowerItems(items) {
     var container = document.getElementById('flowerItemList');
     if (!items || items.length === 0) {
-        container.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:30px;">暂未配置兑换项目，联系家长添加 🌸</div>';
+        container.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:30px;">暂未配置兑换项目，联系家长添�?🌸</div>';
         return;
     }
     container.innerHTML = items.map(function(item) {
         var canRedeem = flowerBalance >= item.flowerCost;
-        var timeStr = item.timeMinutes ? '（' + item.timeMinutes + ' 分钟/次）' : '';
-        var limitStr = item.dailyLimit ? '每日上限 ' + item.dailyLimit + ' 朵' : '不限';
+        var timeStr = item.timeMinutes ? '�? + item.timeMinutes + ' 分钟/次）' : '';
+        var limitStr = item.dailyLimit ? '每日上限 ' + item.dailyLimit + ' �? : '不限';
         return '<div style="background:#fff5f7;border:1.5px solid #fed7e2;border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">' +
           '<div style="flex:1;min-width:0;">' +
             '<div style="font-size:0.98rem;font-weight:700;color:#2d3748;">' + item.name + timeStr + '</div>' +
@@ -1950,7 +1952,7 @@ function renderFlowerItems(items) {
               (item.description ? ' · ' + item.description : '') + '</div>' +
           '</div>' +
           '<div style="text-align:right;flex-shrink:0;margin-left:12px;">' +
-            '<div style="font-size:1.05rem;font-weight:900;color:#ff758c;white-space:nowrap;">🌸×' + item.flowerCost + '/次</div>' +
+            '<div style="font-size:1.05rem;font-weight:900;color:#ff758c;white-space:nowrap;">🌸×' + item.flowerCost + '/�?/div>' +
             '<button onclick="openRedeemPanel(' + JSON.stringify(item).replace(/"/g,'&quot;') + ')"' +
               ' style="margin-top:6px;padding:6px 14px;border-radius:20px;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;' +
               (canRedeem ? 'background:linear-gradient(135deg,#ff758c,#ff7eb3);color:#fff;' : 'background:#e2e8f0;color:#a0aec0;cursor:not-allowed;') + '"' +
@@ -1965,17 +1967,17 @@ var _redeemItem = null;
 function openRedeemPanel(item) {
     _redeemItem = item;
     var maxQty = item.dailyLimit ? item.dailyLimit : 99;
-    // 按余额限制最大数量
+    // 按余额限制最大数�?
     var maxByBalance = item.flowerCost > 0 ? Math.floor(flowerBalance / item.flowerCost) : 99;
     maxQty = Math.min(maxQty, maxByBalance);
-    if (maxQty <= 0) { showMessage('小红花不足 🌸', 'error'); return; }
+    if (maxQty <= 0) { showMessage('小红花不�?🌸', 'error'); return; }
 
     document.getElementById('redeemItemName').textContent = item.name;
     document.getElementById('redeemCostPerUnit').textContent = item.flowerCost;
     document.getElementById('redeemTimePerUnit').textContent = item.timeMinutes ? item.timeMinutes + ' 分钟' : '-';
     document.getElementById('redeemQtyInput').max = maxQty;
     document.getElementById('redeemQtyInput').value = 1;
-    document.getElementById('redeemLimitHint').textContent = '最多可兑 ' + maxQty + ' 次';
+    document.getElementById('redeemLimitHint').textContent = '最多可�?' + maxQty + ' �?;
     calcRedeemSummary();
     document.getElementById('redeemPanel').style.display = 'flex';
 }
@@ -1985,29 +1987,29 @@ function closeRedeemPanel() {
 function calcRedeemSummary() {
     if (!_redeemItem) return;
     var qty = parseInt(document.getElementById('redeemQtyInput').value);
-    if (isNaN(qty) || qty < 1) { document.getElementById('redeemSummaryText').innerHTML = '<span style="color:#e53e3e;">数量至少为 1</span>'; return; }
+    if (isNaN(qty) || qty < 1) { document.getElementById('redeemSummaryText').innerHTML = '<span style="color:#e53e3e;">数量至少�?1</span>'; return; }
     var totalCost = _redeemItem.flowerCost * qty;
     var totalTime = _redeemItem.timeMinutes ? _redeemItem.timeMinutes * qty : null;
     document.getElementById('redeemSummaryText').innerHTML =
-        '消耗 <strong style="color:#ff758c;">🌸×' + totalCost + '</strong>' +
-        (totalTime ? '，获得 <strong style="color:#38a169;">' + totalTime + ' 分钟</strong>' : '');
+        '消�?<strong style="color:#ff758c;">🌸×' + totalCost + '</strong>' +
+        (totalTime ? '，获�?<strong style="color:#38a169;">' + totalTime + ' 分钟</strong>' : '');
 }
 function doFlowerRedeem() {
     if (!_redeemItem) return;
     var qty = parseInt(document.getElementById('redeemQtyInput').value);
-    if (isNaN(qty) || qty < 1) { showMessage('兑换数量至少为 1', 'error'); return; }
+    if (isNaN(qty) || qty < 1) { showMessage('兑换数量至少�?1', 'error'); return; }
     var totalCost = _redeemItem.flowerCost * qty;
-    if (flowerBalance < totalCost) { showMessage('小红花不足 🌸', 'error'); return; }
+    if (flowerBalance < totalCost) { showMessage('小红花不�?🌸', 'error'); return; }
     var fd = new FormData();
     fd.append('itemId', _redeemItem.id);
     fd.append('qty', qty);
-    fetch('/flower/redeem', { method:'POST', body: fd })
+    fetch(ctx + '/flower/redeem', { method:'POST', body: fd })
         .then(function(r){ return r.json(); })
         .then(function(data){
             if (data.success) {
                 flowerBalance = data.newBalance || 0;
                 document.getElementById('flowerBalanceDisplay').textContent = flowerBalance;
-                document.getElementById('flowerCountBadge').textContent = flowerBalance + ' 朵';
+                document.getElementById('flowerCountBadge').textContent = flowerBalance + ' �?;
                 closeRedeemPanel();
                 loadFlowerInfo();
                 showMessage(data.message, 'success');
@@ -2018,7 +2020,7 @@ function doFlowerRedeem() {
         .catch(function(){ showMessage('网络错误', 'error'); });
 }
 function loadFlowerRecords() {
-    fetch('/flower/records')
+    fetch(ctx + '/flower/records')
         .then(function(r){ return r.json(); })
         .then(function(data){
             var container = document.getElementById('flowerRecordList');
@@ -2026,7 +2028,7 @@ function loadFlowerRecords() {
                 container.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:30px;">暂无变更记录</div>';
                 return;
             }
-            var typeLabel = {1:'🎰抽奖获得', 2:'🌸兑换消耗', 3:'👨‍👩‍👧家长调整', 4:'↩️撤销退还'};
+            var typeLabel = {1:'🎰抽奖获得', 2:'🌸兑换消�?, 3:'👨‍👩‍👧家长调�?, 4:'↩️撤销退�?};
             container.innerHTML = data.records.map(function(r){
                 var sign = r.changeAmount > 0 ? '+' : '';
                 var color = r.changeAmount > 0 ? '#38a169' : '#e53e3e';
@@ -2037,15 +2039,15 @@ function loadFlowerRecords() {
                     '<div style="font-size:0.75rem;color:#a0aec0;">' + (r.remark || '') + '  ' + d + '</div>' +
                   '</div>' +
                   '<div style="text-align:right;">' +
-                    '<div style="font-size:1rem;font-weight:700;color:' + color + ';">' + sign + r.changeAmount + ' 朵</div>' +
-                    '<div style="font-size:0.75rem;color:#a0aec0;">余 ' + r.balance + '</div>' +
+                    '<div style="font-size:1rem;font-weight:700;color:' + color + ';">' + sign + r.changeAmount + ' �?/div>' +
+                    '<div style="font-size:0.75rem;color:#a0aec0;">�?' + r.balance + '</div>' +
                   '</div>' +
                 '</div>';
             }).join('');
         });
 }
 function loadMyRedemptions() {
-    fetch('/flower/myRedemptions')
+    fetch(ctx + '/flower/myRedemptions')
         .then(function(r){ return r.json(); })
         .then(function(data){
             var container = document.getElementById('flowerRedemptionList');
@@ -2057,13 +2059,13 @@ function loadMyRedemptions() {
             var statusColor = {0:'#d69e2e', 1:'#38a169', 2:'#a0aec0'};
             container.innerHTML = data.redemptions.map(function(r){
                 var d = r.redeemTime ? new Date(r.redeemTime).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'}) : '';
-                var timeStr = r.timeMinutes ? '（' + r.timeMinutes + ' 分钟）' : '';
+                var timeStr = r.timeMinutes ? '�? + r.timeMinutes + ' 分钟�? : '';
                 return '<div style="background:#fff5f7;border-radius:12px;padding:12px 14px;margin-bottom:10px;">' +
                   '<div style="display:flex;justify-content:space-between;">' +
                     '<div style="font-weight:600;color:#2d3748;">' + r.itemName + timeStr + '</div>' +
                     '<div style="font-size:0.82rem;font-weight:700;color:' + (statusColor[r.status]||'#718096') + ';">' + (statusLabel[r.status]||'') + '</div>' +
                   '</div>' +
-                  '<div style="font-size:0.78rem;color:#a0aec0;margin-top:4px;">消耗 🌸×' + r.flowerCost + '  · ' + d + '</div>' +
+                  '<div style="font-size:0.78rem;color:#a0aec0;margin-top:4px;">消�?🌸×' + r.flowerCost + '  · ' + d + '</div>' +
                 '</div>';
             }).join('');
         });
@@ -2071,7 +2073,7 @@ function loadMyRedemptions() {
 // 抽奖中奖小红花时刷新显示
 function updateFlowerBadge(newBalance) {
     flowerBalance = newBalance;
-    document.getElementById('flowerCountBadge').textContent = flowerBalance + ' 朵';
+    document.getElementById('flowerCountBadge').textContent = flowerBalance + ' �?;
     if (document.getElementById('flowerBalanceDisplay')) {
         document.getElementById('flowerBalanceDisplay').textContent = flowerBalance;
     }
@@ -2080,14 +2082,14 @@ function updateFlowerBadge(newBalance) {
 document.getElementById('flowerModal').addEventListener('click', function(e){
     if (e.target === this) closeFlowerModal();
 });
-// 页面初始化时加载小红花余量
+// 页面初始化时加载小红花余�?
 (function initFlowerBadge(){
-    fetch('/flower/info')
+    fetch(ctx + '/flower/info')
         .then(function(r){ return r.json(); })
         .then(function(data){
             if (data.success) {
                 flowerBalance = data.balance || 0;
-                document.getElementById('flowerCountBadge').textContent = flowerBalance + ' 朵';
+                document.getElementById('flowerCountBadge').textContent = flowerBalance + ' �?;
             }
         }).catch(function(){});
 })();

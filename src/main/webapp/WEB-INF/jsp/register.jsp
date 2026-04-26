@@ -426,6 +426,7 @@
     <a class="login-link" href="/login">🔙 返回登录</a>
 </div>
 <script>
+var ctx = '${pageContext.request.contextPath}';
 $(document).ready(function() {
     // 刷新验证码
     refreshCaptcha();
@@ -514,7 +515,7 @@ $(document).ready(function() {
             
             // Ajax提交
             $.ajax({
-                url: '/register',
+                url: ctx + '/register',
                 type: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -554,14 +555,14 @@ $(document).ready(function() {
                             // 返回的是login页面，注册成功
                             showSuccess('✅ 注册成功！正在跳转到登录页...');
                             setTimeout(function() {
-                                window.location.href = '/login';
+                                window.location.href = ctx + '/login';
                             }, 1500);
                         }
                     } else {
                         // 非HTML响应
                         showSuccess('✅ 注册成功！正在跳转到登录页...');
                         setTimeout(function() {
-                            window.location.href = '/login';
+                            window.location.href = ctx + '/login';
                         }, 1500);
                     }
                 },
@@ -570,7 +571,7 @@ $(document).ready(function() {
                         // 重定向，注册成功
                         showSuccess('✅ 注册成功！正在跳转到登录页...');
                         setTimeout(function() {
-                            window.location.href = '/login';
+                            window.location.href = ctx + '/login';
                         }, 1500);
                     } else {
                         showError('❌ 注册失败，请检查输入信息');
@@ -607,7 +608,7 @@ function showSuccess(message) {
 
 // 刷新验证码图片
 function refreshCaptcha() {
-    $('#captchaImage').attr('src', '/captcha/image?t=' + new Date().getTime());
+    $('#captchaImage').attr('src', ctx + '/captcha/image?t=' + new Date().getTime());
 }
 </script>
 </body>

@@ -349,6 +349,7 @@
     <a class="register-link" href="/register">📝 家长注册</a>
 </div>
 <script>
+var ctx = '${pageContext.request.contextPath}';
 $(document).ready(function() {
     // 刷新验证码
     refreshCaptcha();
@@ -407,7 +408,7 @@ $(document).ready(function() {
             
             // Ajax提交
             $.ajax({
-                url: '/login',
+                url: ctx + '/login',
                 type: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -453,7 +454,7 @@ $(document).ready(function() {
                             // 返回的是其他页面（如main页面），说明登录成功
                             showSuccess('✅ 登录成功，正在跳转...');
                             setTimeout(function() {
-                                window.location.href = '/main';
+                                window.location.href = ctx + '/main';
                             }, 500);
                         }
                     } else {
@@ -461,7 +462,7 @@ $(document).ready(function() {
                         // 非HTML响应，登录成功
                         showSuccess('✅ 登录成功，正在跳转...');
                         setTimeout(function() {
-                            window.location.href = '/main';
+                            window.location.href = ctx + '/main';
                         }, 500);
                     }
                 },
@@ -472,7 +473,7 @@ $(document).ready(function() {
                         // 重定向，登录成功
                         showSuccess('✅ 登录成功，正在跳转...');
                         setTimeout(function() {
-                            window.location.href = '/main';
+                            window.location.href = ctx + '/main';
                         }, 500);
                     } else {
                         showError('❌ 登录失败，请检查输入信息');
@@ -506,7 +507,7 @@ function showSuccess(message) {
 
 // 刷新验证码图片
 function refreshCaptcha() {
-    $('#captchaImage').attr('src', '/captcha/image?t=' + new Date().getTime());
+    $('#captchaImage').attr('src', ctx + '/captcha/image?t=' + new Date().getTime());
 }
 </script>
 </body>

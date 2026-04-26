@@ -192,6 +192,7 @@
     </div>
 
     <script>
+        var ctx = '${pageContext.request.contextPath}';
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -213,7 +214,7 @@
             document.getElementById('loading').style.display = 'block';
             
             // 发送登录请求
-            fetch('/mobile/login', {
+            fetch(ctx + '/mobile/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -230,7 +231,7 @@
                     console.log('登录成功，准备跳转到:', '/mobile/checkin');
                     setTimeout(() => {
                         console.log('开始跳转到移动端打卡页面');
-                        window.location.href = '/mobile/checkin';
+                        window.location.href = ctx + '/mobile/checkin';
                     }, 1500);
                 } else {
                     showMessage(data.message || '登录失败', 'error');

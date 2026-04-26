@@ -11,8 +11,10 @@
     <title>积分管理 - 学生打卡系统</title>
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/themes/default/easyui.css">
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/themes/icon.css">
-    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/jquery.min.js"></script>
-    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/jquery.min.js">
+var ctx = '${pageContext.request.contextPath}';</script>
+    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/jquery.easyui.min.js">
+var ctx = '${pageContext.request.contextPath}';</script>
     <style>
         body { background: #e6fffa; margin: 0; }
         .header { background: linear-gradient(120deg, #4fd1c5 0%, #38b2ac 100%); color: #fff; padding: 18px 32px; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
@@ -40,10 +42,10 @@
         <tr>
             <th data-options="field:'id',width:40">ID</th>
             <th data-options="field:'studentName',width:80">学生姓名</th>
-            <th data-options="field:'operatorName',width:80">操作人</th>
+            <th data-options="field:'operatorName',width:80">操作�?/th>
             <th data-options="field:'points',width:80">积分变动</th>
             <th data-options="field:'type',width:80,formatter:formatType">类型</th>
-            <th data-options="field:'balance',width:80">变动后余额</th>
+            <th data-options="field:'balance',width:80">变动后余�?/th>
             <th data-options="field:'operateTime',width:120">操作时间</th>
             <th data-options="field:'remark',width:120">备注</th>
             <th data-options="field:'operation',width:80,formatter:formatOp">操作</th>
@@ -55,12 +57,12 @@
 <div id="dlgAdd" class="easyui-dialog" style="width:480px" closed="true" buttons="#dlg-add-btns"
      data-options="modal:true,resizable:false,shadow:true,collapsible:false,maximizable:false">
     <div style="text-align:center;margin-bottom:20px;color:#2d3748;font-size:1.1rem;font-weight:500;">
-        ➕ 增加积分
+        �?增加积分
     </div>
     <form id="fmAdd" method="post" style="padding:0 10px;">
         <div style="margin-bottom:18px;">
             <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;font-size:0.9rem;">
-                👨‍🎓 选择学生 <span style="color:#e53e3e;">*</span>
+                👨‍�?选择学生 <span style="color:#e53e3e;">*</span>
             </label>
             <select name="studentId" class="easyui-combobox" required="true" 
                     data-options="prompt:'请选择学生',iconCls:'icon-man',valueField:'id',textField:'text',editable:false" 
@@ -72,7 +74,7 @@
                 🎯 增加积分 <span style="color:#e53e3e;">*</span>
             </label>
             <input name="points" class="easyui-numberbox" required="true" 
-                   data-options="prompt:'请输入积分数量',iconCls:'icon-tip',min:1,max:9999" 
+                   data-options="prompt:'请输入积分数�?,iconCls:'icon-tip',min:1,max:9999" 
                    style="width:100%;height:36px;">
         </div>
         <div style="margin-bottom:18px;">
@@ -99,12 +101,12 @@
 <div id="dlgReduce" class="easyui-dialog" style="width:480px" closed="true" buttons="#dlg-reduce-btns"
      data-options="modal:true,resizable:false,shadow:true,collapsible:false,maximizable:false">
     <div style="text-align:center;margin-bottom:20px;color:#2d3748;font-size:1.1rem;font-weight:500;">
-        ➖ 扣除积分
+        �?扣除积分
     </div>
     <form id="fmReduce" method="post" style="padding:0 10px;">
         <div style="margin-bottom:18px;">
             <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;font-size:0.9rem;">
-                👨‍🎓 选择学生 <span style="color:#e53e3e;">*</span>
+                👨‍�?选择学生 <span style="color:#e53e3e;">*</span>
             </label>
             <select name="studentId" class="easyui-combobox" required="true" 
                     data-options="prompt:'请选择学生',iconCls:'icon-man',valueField:'id',textField:'text',editable:false" 
@@ -116,7 +118,7 @@
                 🎯 扣除积分 <span style="color:#e53e3e;">*</span>
             </label>
             <input name="points" class="easyui-numberbox" required="true" 
-                   data-options="prompt:'请输入积分数量',iconCls:'icon-tip',min:1,max:9999" 
+                   data-options="prompt:'请输入积分数�?,iconCls:'icon-tip',min:1,max:9999" 
                    style="width:100%;height:36px;">
         </div>
         <div style="margin-bottom:18px;">
@@ -141,11 +143,12 @@
 </div>
 
 <script>
+var ctx = '${pageContext.request.contextPath}';
 // 用户角色变量
 var isStudent = <%= isStudent %>;
 var isAdmin = <%= isAdmin %>;
 
-// 日期格式化函数
+// 日期格式化函�?
 function formatDate(date) {
     var y = date.getFullYear();
     var m = date.getMonth() + 1;
@@ -177,7 +180,7 @@ function doSearch() {
     // 添加日期查询参数
     var searchDate = $('#search_date').datebox('getValue');
     if (searchDate) {
-        // 将日期格式从 mm/dd/yyyy 转换为 yyyy-mm-dd
+        // 将日期格式从 mm/dd/yyyy 转换�?yyyy-mm-dd
         var date = new Date(searchDate);
         if (!isNaN(date.getTime())) {
             var year = date.getFullYear();
@@ -196,9 +199,9 @@ function formatType(val) {
     return val;
 }
 function formatOp(val,row) {
-    // 学生用户不显示删除按钮
+    // 学生用户不显示删除按�?
     if (isStudent) {
-        return '<span style="color:#999;">无操作</span>';
+        return '<span style="color:#999;">无操�?/span>';
     }
     return '<a href="javascript:void(0)" onclick="delPoints('+row.id+')">删除</a>';
 }
@@ -209,7 +212,7 @@ function openAdd() {
 }
 function saveAdd() {
     var data = $('#fmAdd').serializeArray().reduce(function(obj, item) { obj[item.name] = item.value; return obj; }, {});
-    $.post('/points/add', data, function(res){
+    $.post(ctx + '/points/add', data, function(res){
         $('#dlgAdd').dialog('close');
         $('#pointsTable').datagrid('reload');
     });
@@ -224,7 +227,7 @@ function openReduce() {
 }
 function saveReduce() {
     var data = $('#fmReduce').serializeArray().reduce(function(obj, item) { obj[item.name] = item.value; return obj; }, {});
-    $.post('/points/reduce', data, function(res){
+    $.post(ctx + '/points/reduce', data, function(res){
         $('#dlgReduce').dialog('close');
         $('#pointsTable').datagrid('reload');
     });
@@ -233,14 +236,14 @@ function closeDlgReduce() {
     $('#dlgReduce').dialog('close');
 }
 function delPoints(id) {
-    $.post('/points/delete', {id:id}, function(res){
+    $.post(ctx + '/points/delete', {id:id}, function(res){
         $('#pointsTable').datagrid('reload');
     });
 }
 
 // 加载学生列表到下拉框
 function loadStudentList(comboId) {
-    $.get('/user/getStudentList', function(data) {
+    $.get(ctx + '/user/getStudentList', function(data) {
         var studentData = [];
         if (data && data.length > 0) {
             for (var i = 0; i < data.length; i++) {

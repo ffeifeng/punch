@@ -5,8 +5,10 @@
     <title>角色管理 - 学生打卡系统</title>
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/themes/default/easyui.css">
     <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/themes/icon.css">
-    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/jquery.min.js"></script>
-    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/jquery.min.js">
+var ctx = '${pageContext.request.contextPath}';</script>
+    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/jquery-easyui-1.4.2/jquery.easyui.min.js">
+var ctx = '${pageContext.request.contextPath}';</script>
     <style>
         body { background: #e6fffa; margin: 0; }
         .header { background: linear-gradient(120deg, #4fd1c5 0%, #38b2ac 100%); color: #fff; padding: 18px 32px; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
@@ -42,10 +44,10 @@
         <input type="hidden" name="id">
         <div style="margin-bottom:18px;">
             <label style="display:block;margin-bottom:8px;color:#4a5568;font-weight:500;font-size:0.9rem;">
-                🏷️ 角色名称 <span style="color:#e53e3e;">*</span>
+                🏷�?角色名称 <span style="color:#e53e3e;">*</span>
             </label>
             <input name="roleName" class="easyui-textbox" required="true" 
-                   data-options="prompt:'请输入角色名称',iconCls:'icon-man'" 
+                   data-options="prompt:'请输入角色名�?,iconCls:'icon-man'" 
                    style="width:100%;height:36px;">
         </div>
         <div style="margin-bottom:18px;">
@@ -53,7 +55,7 @@
                 🔑 角色编码 <span style="color:#e53e3e;">*</span>
             </label>
             <input name="roleCode" class="easyui-textbox" required="true" 
-                   data-options="prompt:'请输入角色编码（如：ADMIN、USER）',iconCls:'icon-edit'" 
+                   data-options="prompt:'请输入角色编码（如：ADMIN、USER�?,iconCls:'icon-edit'" 
                    style="width:100%;height:36px;">
         </div>
         <div style="margin-bottom:18px;">
@@ -78,6 +80,7 @@
 </div>
 
 <script>
+var ctx = '${pageContext.request.contextPath}';
 function formatOp(val,row) {
     return '<a href="javascript:void(0)" onclick="openEdit('+row.id+')">编辑</a> '
         + '<a href="javascript:void(0)" onclick="delRole('+row.id+')">删除</a>';
@@ -111,7 +114,7 @@ function closeDlg() {
     $('#dlg').dialog('close');
 }
 function delRole(id) {
-    $.post('/role/delete', {id:id}, function(res){
+    $.post(ctx + '/role/delete', {id:id}, function(res){
         $('#roleTable').datagrid('reload');
     });
 }
